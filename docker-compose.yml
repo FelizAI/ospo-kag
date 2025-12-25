@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  maxkb:
+    build:
+      context: .
+      dockerfile: installer/Dockerfile
+      args:
+        MAXKB_SANDBOX_HOME: /opt/maxkb-app/sandbox
+    container_name: maxkb-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${MAXKB_PORT:-8080}:8080"
+    volumes:
+      - ./data/maxkb_data:/opt/maxkb
+      - ./data/maxkb_logs:/opt/maxkb-app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - maxkb-network
+
+networks:
+  maxkb-network:
+    external: true
+    name: maxkb-network
+

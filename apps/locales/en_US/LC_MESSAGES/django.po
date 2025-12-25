@@ -8885,8 +8885,5 @@ msgstr ""
 msgid "Role IDs cannot be empty"
 msgstr ""
 
-msgid "Role IDs"
-msgstr ""
-
 msgid "Some roles do not exist"
 msgstr ""
