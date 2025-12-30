@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: Password123@postgres
       POSTGRES_MAX_CONNECTIONS: 1000
     ports:
-      - "5432:5432"
+      - "35432:5432"
     volumes:
       - ./data/postgres_data:/var/lib/postgresql/data
       - ./installer/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -86,7 +86,7 @@ services:
       --databases 16
       --loglevel warning
     ports:
-      - "6379:6379"
+      - "36379:6379"
     volumes:
       - ./data/redis_data:/data
     healthcheck:

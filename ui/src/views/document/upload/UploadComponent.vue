@@ -249,7 +249,7 @@ const rules = reactive({
   ],
 })
 
-const file_count_limit = ref(50)
+const file_count_limit = ref(5000)
 const file_size_limit = ref(100)
 
 watch(form.value, (value) => {
