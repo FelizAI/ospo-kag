@@ -1,12 +1,12 @@
 <template>
   <div class="p-16-24">
-    <h2 class="mb-16">KAG 集成</h2>
+    <h2 class="mb-16">{{ $t('views.knowledge.kag.title') }}</h2>
     <el-card style="--el-card-padding: 0">
       <div class="knowledge-setting main-calc-height">
         <el-scrollbar>
           <div class="p-24" v-loading="loading">
             <h4 class="title-decoration-1 mb-16">
-              配置信息
+              {{ $t('views.knowledge.kag.configInfo') }}
             </h4>
             <el-form
               ref="formRef"
@@ -15,45 +15,45 @@
               label-position="top"
               require-asterisk-position="right"
             >
-              <el-form-item label="KAG URL" prop="kag_url">
-                <el-input v-model="form.kag_url" placeholder="请输入 KAG 系统地址" />
+              <el-form-item :label="$t('views.knowledge.kag.form.kagUrl')" prop="kag_url">
+                <el-input v-model="form.kag_url" :placeholder="$t('views.knowledge.kag.form.kagUrlPlaceholder')" />
               </el-form-item>
-              <el-form-item label="KAG Token" prop="kag_token">
-                <el-input v-model="form.kag_token" type="password" show-password placeholder="请输入 KAG Token" />
+              <el-form-item :label="$t('views.knowledge.kag.form.kagToken')" prop="kag_token">
+                <el-input v-model="form.kag_token" type="password" show-password :placeholder="$t('views.knowledge.kag.form.kagTokenPlaceholder')" />
               </el-form-item>
               <el-row :gutter="20">
                 <el-col :span="12">
-                  <el-form-item label="LLM Config ID" prop="llm_config_id">
+                  <el-form-item :label="$t('views.knowledge.kag.form.llmConfigId')" prop="llm_config_id">
                     <el-input-number v-model="form.llm_config_id" :min="1" controls-position="right" class="w-full" />
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                   <el-form-item label="Embedding Config ID" prop="embedding_config_id">
+                   <el-form-item :label="$t('views.knowledge.kag.form.embeddingConfigId')" prop="embedding_config_id">
                     <el-input-number v-model="form.embedding_config_id" :min="1" controls-position="right" class="w-full" />
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                  <el-col :span="12">
-                  <el-form-item label="Prompt ID" prop="prompt_id">
-                    <el-input v-model="form.prompt_id" placeholder="可选" />
+                  <el-form-item :label="$t('views.knowledge.kag.form.promptId')" prop="prompt_id">
+                    <el-input v-model="form.prompt_id" :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" />
                   </el-form-item>
                  </el-col>
                  <el-col :span="12">
-                  <el-form-item label="Extraction Rounds" prop="extraction_rounds">
+                  <el-form-item :label="$t('views.knowledge.kag.form.extractionRounds')" prop="extraction_rounds">
                     <el-input-number v-model="form.extraction_rounds" :min="1" controls-position="right" class="w-full" />
                   </el-form-item>
                  </el-col>
               </el-row>
             </el-form>
             <div class="text-right mt-16">
-              <el-button @click="saveConfig" type="primary">保存配置</el-button>
-              <el-button @click="handleExport" type="success" :loading="exportLoading">导入到 KAG</el-button>
+              <el-button @click="saveConfig" type="primary">{{ $t('views.knowledge.kag.button.save') }}</el-button>
+              <el-button @click="handleExport" type="success" :loading="exportLoading">{{ $t('views.knowledge.kag.button.export') }}</el-button>
             </div>
             
             <div v-if="exportResult" class="mt-16">
                 <el-alert
-                    :title="exportResult.message || '操作完成'"
+                    :title="exportResult.message || $t('views.knowledge.kag.message.taskComplete')"
                     :type="exportResult.status === 'PENDING' ? 'success' : 'warning'"
                     :description="'Task ID: ' + exportResult.task_id"
                     show-icon
@@ -69,10 +69,12 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { MsgSuccess, MsgError } from '@/utils/message'
 import { loadSharedApi } from '@/utils/dynamics-api/shared-api'
 
 const route = useRoute()
+const { t } = useI18n()
 const { params: { id, folderId } } = route as any
 
 const apiType = computed(() => {
@@ -102,8 +104,8 @@ const form = ref<any>({
 })
 
 const rules = reactive({
-  kag_url: [{ required: true, message: '请输入 KAG URL', trigger: 'blur' }],
-  kag_token: [{ required: true, message: '请输入 KAG Token', trigger: 'blur' }]
+  kag_url: [{ required: true, message: computed(() => t('views.knowledge.kag.form.kagUrlPlaceholder')), trigger: 'blur' }],
+  kag_token: [{ required: true, message: computed(() => t('views.knowledge.kag.form.kagTokenPlaceholder')), trigger: 'blur' }]
 })
 
 function getApi() {
@@ -133,7 +135,7 @@ async function saveConfig() {
   const api = getApi()
   if (api && api.putKagConfig) {
       api.putKagConfig(id, payload, loading).then(() => {
-        MsgSuccess('保存成功')
+        MsgSuccess(t('views.knowledge.kag.message.saveSuccess'))
       })
   }
 }
@@ -155,7 +157,7 @@ async function handleExport() {
   if (api && api.exportToKag) {
       api.exportToKag(id, payload, exportLoading).then((res: any) => {
         exportResult.value = res.data
-        MsgSuccess('导入请求已发送')
+        MsgSuccess(t('views.knowledge.kag.message.exportSent'))
       }).catch((err: any) => {
           // Error is handled by request interceptor usually
       }).finally(() => {
@@ -163,7 +165,7 @@ async function handleExport() {
       })
   } else {
       exportLoading.value = false
-      MsgError('API not available')
+      MsgError(t('views.knowledge.kag.message.apiUnavailable'))
   }
 }
 

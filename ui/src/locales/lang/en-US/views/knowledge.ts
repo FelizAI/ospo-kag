@@ -102,4 +102,29 @@ export default {
     completeText: 'Delete all documents in the local knowledge and re-fetch web site documents',
     tip: 'Note: All syncs will delete existing data and re-fetch new data. Please proceed with caution.',
   },
+  kag: {
+    title: 'KAG Integration',
+    configInfo: 'Configuration',
+    form: {
+      kagUrl: 'KAG URL',
+      kagUrlPlaceholder: 'Please enter KAG system address',
+      kagToken: 'KAG Token',
+      kagTokenPlaceholder: 'Please enter KAG Token',
+      llmConfigId: 'LLM Config ID',
+      embeddingConfigId: 'Embedding Config ID',
+      promptId: 'Prompt ID',
+      promptIdPlaceholder: 'Optional',
+      extractionRounds: 'Extraction Rounds',
+    },
+    button: {
+      save: 'Save Config',
+      export: 'Export to KAG',
+    },
+    message: {
+      saveSuccess: 'Saved successfully',
+      exportSent: 'Export request sent',
+      apiUnavailable: 'API not available',
+      taskComplete: 'Operation complete',
+    },
+  },
 }

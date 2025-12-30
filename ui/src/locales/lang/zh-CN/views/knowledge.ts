@@ -106,4 +106,29 @@ export default {
     completeText: '先删除本地知识库所有文档，重新获取 Web 站点文档',
     tip: '注意：所有同步都会删除已有数据重新获取新数据，请谨慎操作。',
   },
+  kag: {
+    title: 'KAG 集成',
+    configInfo: '配置信息',
+    form: {
+      kagUrl: 'KAG URL',
+      kagUrlPlaceholder: '请输入 KAG 系统地址',
+      kagToken: 'KAG Token',
+      kagTokenPlaceholder: '请输入 KAG Token',
+      llmConfigId: 'LLM Config ID',
+      embeddingConfigId: 'Embedding Config ID',
+      promptId: 'Prompt ID',
+      promptIdPlaceholder: '可选',
+      extractionRounds: 'Extraction Rounds',
+    },
+    button: {
+      save: '保存配置',
+      export: '导入到 KAG',
+    },
+    message: {
+      saveSuccess: '保存成功',
+      exportSent: '导入请求已发送',
+      apiUnavailable: 'API 不可用',
+      taskComplete: '操作完成',
+    },
+  },
 }
