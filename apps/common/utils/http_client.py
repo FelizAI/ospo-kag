@@ -87,7 +87,7 @@ class KagConfig:
     useKeywords: bool = False
     useRag: bool = False
     useGraphRag: bool = True
-    retrievalTopK: int = 10
+    retrievalTopK: int = 5
     keyRagWeight: int = 5
     instanceIds: list[str] = field(default_factory=list)
     analysisPromptId: str = 'f02d6f5d-64a2-45bf-af20-cff5eaa03329'
@@ -114,7 +114,7 @@ def neo4j_test_query(query: str,instance_ids:List[str]) -> GraphQueryResponse:
             'Accept': 'application/json',
         },
         json_body=asdict(Neo4jTestQueryRequest(query=query, kagConfig=kag_config)),
-        timeout=30.0,
+        timeout=90.0,
         verify_tls=True,
     )
     response:HttpResponse = HttpClient.send_or_raise(request)
