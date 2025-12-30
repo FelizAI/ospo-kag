@@ -60,7 +60,7 @@ export default {
     roleSettings: {
       label: 'System Prompt',
       placeholder:
-        'System prompt, you can reference variables in the system: {data} is the segment hit in the knowledge base; {question} is the question asked by the user.',
+        'System prompt, you can reference variables in the system: {data} is the segment hit in the knowledge base; {concept} is the concepts hit in the knowledge base; {triple} is the triples hit in the knowledge base; {retrieval_content} is the raw retrieval content; {question} is the question asked by the user.',
       tooltip: 'Set the role or instructions for the model to follow',
     },
 
@@ -69,14 +69,14 @@ export default {
       noReferences: '（No references Knowledge）',
       references: ' (References Knowledge)',
       placeholder:
-        'User prompt, you can reference variables in the system: {data} is the segment hit in the knowledge base; {question} is the question asked by the user',
+        'User prompt, you can reference variables in the system: {data} is the segment hit in the knowledge base; {concept} is the concepts hit in the knowledge base; {triple} is the triples hit in the knowledge base; {retrieval_content} is the raw retrieval content; {question} is the question asked by the user',
       requiredMessage: 'Please enter User prompt',
       tooltip: 'The question or command that the user poses to the model',
 
       noReferencesTooltip:
         'By adjusting the content of the prompt, you can guide the direction of the large model chat. This prompt will be fixed at the beginning of the context. Variables used: {question} is the question posed by the user.',
       referencesTooltip:
-        'By adjusting the content of the prompt, you can guide the direction of the large model chat. This prompt will be fixed at the beginning of the context. Variables used: {data} carries known information from the knowledge; {question} is the question posed by the user.',
+        'By adjusting the content of the prompt, you can guide the direction of the large model chat. This prompt will be fixed at the beginning of the context. Variables used: {data} carries known information from the knowledge; {concept} carries concept set; {triple} carries triple set; {retrieval_content} carries raw retrieval content; {question} is the question posed by the user.',
       defaultPrompt: `Known information: {data}
         Question: {question}
          Response requirements:

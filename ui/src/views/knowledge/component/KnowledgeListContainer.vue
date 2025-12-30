@@ -245,6 +245,34 @@
                             <AppIcon iconName="app-migrate" class="color-secondary"></AppIcon>
                             {{ $t('common.moveTo') }}
                           </el-dropdown-item>
+                          <el-dropdown-item
+                            @click.stop="openGraphBindingDialog(item)"
+                            v-if="permissionPrecise.edit(item.id) && apiType === 'workspace'"
+                          >
+                            <AppIcon iconName="app-resource-authorization" class="color-secondary"></AppIcon>
+                            {{ $t('关联第三方系统') }}
+                          </el-dropdown-item>
+                          <el-dropdown-item
+                            @click.stop="openGraphBindingListDialog(item)"
+                            v-if="permissionPrecise.edit(item.id) && apiType === 'workspace'"
+                          >
+                            <AppIcon iconName="app-resource-authorization" class="color-secondary"></AppIcon>
+                            {{ $t('查看第三方绑定') }}
+                          </el-dropdown-item>
+                          <el-dropdown-item
+                            @click.stop="openGraphUnbindingDialog(item)"
+                            v-if="permissionPrecise.edit(item.id) && apiType === 'workspace'"
+                          >
+                            <AppIcon iconName="app-resource-authorization" class="color-secondary"></AppIcon>
+                            {{ $t('解除第三方绑定') }}
+                          </el-dropdown-item>
+                          <el-dropdown-item
+                            @click.stop="unBindAllGraphBindings(item)"
+                            v-if="permissionPrecise.edit(item.id) && apiType === 'workspace'"
+                          >
+                            <AppIcon iconName="app-resource-authorization" class="color-secondary"></AppIcon>
+                            {{ $t('解除全部第三方绑定') }}
+                          </el-dropdown-item>
 
                           <el-dropdown-item
                             @click.stop="
@@ -316,7 +344,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, reactive, shallowRef, nextTick, computed, watch } from 'vue'
+import { onMounted, ref, reactive, shallowRef, nextTick, computed, watch, h } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { cloneDeep, get } from 'lodash'
 import CreateKnowledgeDialog from '@/views/knowledge/create-component/CreateKnowledgeDialog.vue'
@@ -338,6 +367,7 @@ import { SourceTypeEnum } from '@/enums/common'
 import { loadSharedApi } from '@/utils/dynamics-api/shared-api'
 import permissionMap from '@/permission'
 import TemplateStoreDialog from "@/views/knowledge/template-store/TemplateStoreDialog.vue";
+import type { KnowledgeGraphBindingItem } from '@/api/type/knowledge'
 const router = useRouter()
 const route = useRoute()
 const { folder, user, knowledge } = useStore()
@@ -398,6 +428,70 @@ const paginationConfig = reactive({
 })
 
 const ResourceAuthorizationDrawerRef = ref()
+
+function openGraphBindingDialog(item: any) {
+  ElMessageBox.prompt('请输入第三方系统Instance ID', '关联第三方系统', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputPattern: /\S+/,
+    inputErrorMessage: 'Instance ID不能为空',
+  })
+    .then(({ value }) => {
+      loadSharedApi({ type: 'knowledge', systemType: apiType.value })
+        .postKnowledgeGraphBinding(item.id, value, loading)
+        .then(() => {
+          MsgSuccess('关联成功')
+        })
+    })
+    .catch(() => {})
+}
+
+function openGraphBindingListDialog(item: { id: string; name: string }) {
+  loadSharedApi({ type: 'knowledge', systemType: apiType.value })
+    .getKnowledgeGraphBindingList(item.id, loading)
+    .then((res: { data: Array<KnowledgeGraphBindingItem> }) => {
+      const instanceIdList = res.data.map((v) => v.instance_id).filter((v) => v)
+      const content = instanceIdList.length > 0 ? instanceIdList.join('\n') : '暂无绑定'
+      ElMessageBox.alert(
+        h('div', { style: { whiteSpace: 'pre-line' } }, content),
+        `已绑定的第三方 Instance（${item.name}）`,
+        { confirmButtonText: '确定' },
+      )
+    })
+}
+
+function openGraphUnbindingDialog(item: { id: string; name: string }) {
+  ElMessageBox.prompt('请输入要解除绑定的Instance ID', `解除第三方绑定（${item.name}）`, {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputPattern: /\S+/,
+    inputErrorMessage: 'Instance ID不能为空',
+  })
+    .then(({ value }) => {
+      loadSharedApi({ type: 'knowledge', systemType: apiType.value })
+        .delKnowledgeGraphBinding(item.id, value, loading)
+        .then(() => {
+          MsgSuccess('解绑成功')
+        })
+    })
+    .catch(() => {})
+}
+
+function unBindAllGraphBindings(item: { id: string; name: string }) {
+  MsgConfirm(`确认解除全部第三方绑定：${item.name}？`, t('common.tip'), {
+    confirmButtonText: t('common.confirm'),
+    confirmButtonClass: 'danger',
+  })
+    .then(() => {
+      loadSharedApi({ type: 'knowledge', systemType: apiType.value })
+        .delKnowledgeGraphBinding(item.id, undefined, loading)
+        .then(() => {
+          MsgSuccess('解绑成功')
+        })
+    })
+    .catch(() => {})
+}
+
 function openAuthorization(item: any) {
   ResourceAuthorizationDrawerRef.value.open(item.id)
 }

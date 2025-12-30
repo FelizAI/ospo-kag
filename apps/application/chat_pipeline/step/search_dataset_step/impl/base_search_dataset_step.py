@@ -7,7 +7,7 @@
     @desc:
 """
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
@@ -19,8 +19,10 @@ from common.config.embedding_config import VectorStore, ModelManage
 from common.constants.permission_constants import RoleConstants
 from common.database_model_manage.database_model_manage import DatabaseModelManage
 from common.db.search import native_search
+from common.utils import http_client
 from common.utils.common import get_file_content
-from knowledge.models import Paragraph, Knowledge
+from common.utils.http_client import GraphQueryResult, GraphQueryResponse
+from knowledge.models import Paragraph, Knowledge, KnowledgeGraphBinding
 from knowledge.models import SearchMode
 from maxkb.conf import PROJECT_DIR
 from models_provider.models import Model
@@ -50,14 +52,14 @@ class BaseSearchDatasetStep(ISearchDatasetStep):
                 search_mode: str = None,
                 workspace_id=None,
                 manage=None,
-                **kwargs) -> List[ParagraphPipelineModel]:
+                **kwargs) -> tuple[List[ParagraphPipelineModel],Optional[List[GraphQueryResult]]]:
         get_knowledge_list_of_authorized = DatabaseModelManage.get_model('get_knowledge_list_of_authorized')
         chat_user_type = manage.context.get('chat_user_type')
         if get_knowledge_list_of_authorized is not None and RoleConstants.CHAT_USER.value.name == chat_user_type:
             knowledge_id_list = get_knowledge_list_of_authorized(manage.context.get('chat_user_id'),
                                                                  knowledge_id_list)
         if len(knowledge_id_list) == 0:
-            return []
+            return [],[GraphQueryResult()]
         exec_problem_text = padding_problem_text if padding_problem_text is not None else problem_text
         model_id = get_embedding_id(knowledge_id_list)
         model = get_model_by_id(model_id, workspace_id)
@@ -71,10 +73,22 @@ class BaseSearchDatasetStep(ISearchDatasetStep):
         embedding_list = vector.query(exec_problem_text, embedding_value, knowledge_id_list, None, exclude_document_id_list,
                                       exclude_paragraph_id_list, True, top_n, similarity, SearchMode(search_mode))
         if embedding_list is None:
-            return []
+            return [],[GraphQueryResult()]
         paragraph_list = self.list_paragraph(embedding_list, vector)
         result = [self.reset_paragraph(paragraph, embedding_list) for paragraph in paragraph_list]
-        return result
+
+        #已经拿到了rag结果，现在调用http接口获取图数据结果
+        bindings:List[KnowledgeGraphBinding] = QuerySet(KnowledgeGraphBinding).filter(knowledge_id__in=knowledge_id_list).all()
+        instance_ids:set[str] = {binding.instance_id for binding in bindings}
+        gqr_result:List[GraphQueryResult] = []
+        for instance_id in instance_ids:
+            gqr:GraphQueryResponse = http_client.neo4j_test_query(problem_text, list(instance_ids))
+            graph_data:GraphQueryResult|None = None
+            if gqr and gqr.data:
+                gqr_result.append(gqr.data)
+            else:
+                gqr_result.append(GraphQueryResult())
+        return result,gqr_result
 
     @staticmethod
     def reset_paragraph(paragraph: Dict, embedding_list: List) -> ParagraphPipelineModel:

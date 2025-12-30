@@ -133,6 +133,9 @@
                       $t('views.application.form.roleSettings.placeholder', {
                         data: '{data}',
                         question: '{question}',
+                        concept: '{concept}',
+                        triple: '{triple}',
+                        retrieval_content: '{retrieval_content}',
                       })
                     "
                   />
@@ -177,6 +180,10 @@
                       $t('views.application.form.prompt.placeholder', {
                         data: '{data}',
                         question: '{question}',
+                        concept: '{concept}',
+                        triple: '{triple}',
+                        retrieval_content: '{retrieval_content}',
+
                       })
                     "
                   />
@@ -291,6 +298,10 @@
                       $t('views.application.form.prompt.placeholder', {
                         data: '{data}',
                         question: '{question}',
+                        concept: '{concept}',
+                        triple: '{triple}',
+                        retrieval_content: '{retrieval_content}',
+
                       })
                     "
                   />
@@ -750,6 +761,10 @@ const toolPermissionPrecise = computed(() => {
 const defaultPrompt = t('views.application.form.prompt.defaultPrompt', {
   data: '{data}',
   question: '{question}',
+  concept: '{concept}',
+    triple: '{triple}',
+    retrieval_content: '{retrieval_content}',
+
 })
 
 const optimizationPrompt =

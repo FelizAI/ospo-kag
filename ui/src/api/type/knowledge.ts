@@ -6,4 +6,12 @@ interface knowledgeData {
   documents?: Array<any>
 }
 
-export type { knowledgeData }
+interface KnowledgeGraphBindingItem {
+  id: string
+  knowledge_id: string
+  instance_id: string
+  create_time: string
+  update_time: string
+}
+
+export type { knowledgeData, KnowledgeGraphBindingItem }

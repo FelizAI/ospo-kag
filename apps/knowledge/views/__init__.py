@@ -5,3 +5,4 @@ from .problem import *
 from .tag import *
 from .knowledge_workflow import *
 from .knowledge_workflow_version import *
+from .knowledge_graph import *

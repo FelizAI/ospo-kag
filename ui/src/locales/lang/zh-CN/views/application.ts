@@ -58,7 +58,7 @@ export default {
     roleSettings: {
       label: '系统提示词',
       placeholder:
-        '系统提示词，可以引用系统中的变量：{data} 是命中知识库中的分段；{question} 是用户提出的问题。',
+        '系统提示词，可以引用系统中的变量：{data} 是命中知识库中的分段；{concept} 是从图数据库检索出的概念节点；{triple} 是从图数据库检索出的三元组信息；{retrieval_content} 是从图数据库检索出的 chunk 信息；{question} 是用户提出的问题。',
       tooltip: '设定模型扮演的角色或遵循的指令',
     },
 
@@ -67,14 +67,14 @@ export default {
       noReferences: ' (无引用知识库)',
       references: ' (引用知识库)',
       placeholder:
-        '用户提示词，可以引用系统中的变量：{data} 是命中知识库中的分段；{question} 是用户提出的问题。',
+        '用户提示词，可以引用系统中的变量：{data} 是命中知识库中的分段;{concept} 是从图数据库检索出的概念节点;{triple} 是从图数据库检索出的三元组信息;{retrieval_content} 是从图数据库检索出的 chunk 信息;{question} 是用户提出的问题。',
       requiredMessage: '请输入用户提示词',
       tooltip:
         '用户向模型提出的问题或输入的指令',
       noReferencesTooltip:
         '通过调整提示词内容，可以引导大模型聊天方向，该提示词会被固定在上下文的开头。可以使用变量：{question} 是用户提出问题的占位符。',
       referencesTooltip:
-        '通过调整提示词内容，可以引导大模型聊天方向，该提示词会被固定在上下文的开头。可以使用变量：{data} 是引用知识库中分段的占位符；{question} 是用户提出问题的占位符。',
+        '通过调整提示词内容，可以引导大模型聊天方向，该提示词会被固定在上下文的开头。可以使用变量：{data} 是引用知识库中分段的占位符;{concept} 是图数据库概念节点占位符;{triple} 是图数据库三元组信息占位符;{retrieval_content} 是图数据库 chunk 信息占位符;{question} 是用户提出问题的占位符。',
       defaultPrompt: `已知信息：{data}
 用户问题：{question}
 回答要求：
