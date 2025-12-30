@@ -60,6 +60,7 @@ dependencies = [
     "pylint==3.3.7",
     "cohere==5.17.0",
     "jsonpath-ng==1.7.0",
+    "zstandard (==0.24.0)",
 ]
 
 [tool.uv]
@@ -81,6 +82,12 @@ torch = [
     { index = "pytorch", marker = "sys_platform == 'win'" },
     { index = "macpytorch", marker = "sys_platform == 'darwin'" },
 ]
+
+
+[[tool.poetry.source]]
+name = "bfsu_mirror"
+url = "https://mirrors.bfsu.edu.cn/pypi/web/simple"
+priority = "primary"
 
 [build-system]
 requires = ["hatchling"]
