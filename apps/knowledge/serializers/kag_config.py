@@ -20,4 +20,4 @@ class ExportToKAGSerializer(serializers.Serializer):
     llm_config_id = serializers.IntegerField(required=False, allow_null=True, help_text=_("LLM配置ID"))
     embedding_config_id = serializers.IntegerField(required=False, allow_null=True, help_text=_("Embedding配置ID"))
     prompt_id = serializers.CharField(required=False, allow_null=True, allow_blank=True, help_text=_("Prompt ID"))
-    extraction_rounds = serializers.IntegerField(default=1, help_text=_("抽取轮数"))
+    extraction_rounds = serializers.IntegerField(default=1, help_text=_("抽取轮数"), min_value=1, max_value=5)
