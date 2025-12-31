@@ -466,6 +466,85 @@ class KnowledgeView(APIView):
             serializer.save(knowledge_id=knowledge_id)
             return result.success(serializer.data)
 
+    class KagPrompts(APIView):
+        authentication_classes = [TokenAuth]
+
+        @has_permissions(
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_knowledge_permission(),
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_permission_workspace_manage_role(),
+            RoleConstants.WORKSPACE_MANAGE.get_workspace_role(),
+            ViewPermission([RoleConstants.USER.get_workspace_role()],
+                           [PermissionConstants.KNOWLEDGE.get_workspace_knowledge_permission()], CompareConstants.AND),
+        )
+        def post(self, request: Request, workspace_id: str, knowledge_id: str):
+            kag_url = request.data.get('kag_url')
+            kag_token = request.data.get('kag_token')
+
+            if not kag_url or not kag_token:
+                config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+                if config:
+                    if not kag_url: kag_url = config.kag_url
+                    if not kag_token: kag_token = config.kag_token
+
+            if not kag_url or not kag_token:
+                return result.success([])
+
+            try:
+                response = requests.get(
+                    f"{kag_url.rstrip('/')}/api/v1/external/prompts",
+                    params={'username': 'admin'},
+                    headers={'X-API-Token': kag_token},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    return result.success(response.json())
+                return result.success([])
+            except Exception as e:
+                maxkb_logger.error(f"Failed to fetch KAG prompts: {str(e)}")
+                return result.success([])
+
+    class KagLlmConfigs(APIView):
+        authentication_classes = [TokenAuth]
+
+        @has_permissions(
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_knowledge_permission(),
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_permission_workspace_manage_role(),
+            RoleConstants.WORKSPACE_MANAGE.get_workspace_role(),
+            ViewPermission([RoleConstants.USER.get_workspace_role()],
+                           [PermissionConstants.KNOWLEDGE.get_workspace_knowledge_permission()], CompareConstants.AND),
+        )
+        def post(self, request: Request, workspace_id: str, knowledge_id: str):
+            kag_url = request.data.get('kag_url')
+            kag_token = request.data.get('kag_token')
+            config_type = request.data.get('config_type')
+
+            if not kag_url or not kag_token:
+                config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+                if config:
+                    if not kag_url: kag_url = config.kag_url
+                    if not kag_token: kag_token = config.kag_token
+
+            if not kag_url or not kag_token:
+                return result.success([])
+
+            try:
+                params = {'username': 'admin'}
+                if config_type:
+                    params['config_type'] = config_type
+
+                response = requests.get(
+                    f"{kag_url.rstrip('/')}/api/v1/external/llm-configs",
+                    params=params,
+                    headers={'X-API-Token': kag_token},
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    return result.success(response.json())
+                return result.success([])
+            except Exception as e:
+                maxkb_logger.error(f"Failed to fetch KAG llm configs: {str(e)}")
+                return result.success([])
+
     class ExportToKAG(APIView):
         authentication_classes = [TokenAuth]
 
@@ -543,7 +622,11 @@ class KnowledgeView(APIView):
                     files=files,
                     timeout=300
                 )
-                response.raise_for_status()
+                if response.status_code != 200:
+                    error_msg = f"KAG Import Failed: {response.status_code} - {response.text}"
+                    maxkb_logger.error(error_msg)
+                    return result.error(error_msg)
+                    
                 return result.success(response.json())
             except Exception as e:
                 maxkb_logger.error(f"Failed to export to KAG: {str(e)}")

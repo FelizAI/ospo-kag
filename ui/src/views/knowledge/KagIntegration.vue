@@ -24,19 +24,40 @@
               <el-row :gutter="20">
                 <el-col :span="12">
                   <el-form-item :label="$t('views.knowledge.kag.form.llmConfigId')" prop="llm_config_id">
-                    <el-input-number v-model="form.llm_config_id" :min="1" controls-position="right" class="w-full" />
+                    <el-select v-model="form.llm_config_id" :placeholder="$t('views.knowledge.kag.form.llmConfigIdPlaceholder')" clearable class="w-full">
+                      <el-option
+                        v-for="item in llmOptions"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
                    <el-form-item :label="$t('views.knowledge.kag.form.embeddingConfigId')" prop="embedding_config_id">
-                    <el-input-number v-model="form.embedding_config_id" :min="1" controls-position="right" class="w-full" />
+                    <el-select v-model="form.embedding_config_id" :placeholder="$t('views.knowledge.kag.form.embeddingConfigIdPlaceholder')" clearable class="w-full">
+                      <el-option
+                        v-for="item in embeddingOptions"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
                   </el-form-item>
                 </el-col>
               </el-row>
               <el-row :gutter="20">
                  <el-col :span="12">
                   <el-form-item :label="$t('views.knowledge.kag.form.promptId')" prop="prompt_id">
-                    <el-input v-model="form.prompt_id" :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" />
+                    <el-select v-model="form.prompt_id" :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" clearable class="w-full">
+                      <el-option
+                        v-for="item in promptOptions"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
                   </el-form-item>
                  </el-col>
                  <el-col :span="12">
@@ -67,11 +88,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { MsgSuccess, MsgError } from '@/utils/message'
 import { loadSharedApi } from '@/utils/dynamics-api/shared-api'
+import { useDebounceFn } from '@vueuse/core'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -103,6 +125,10 @@ const form = ref<any>({
   extraction_rounds: 1
 })
 
+const promptOptions = ref<any[]>([])
+const llmOptions = ref<any[]>([])
+const embeddingOptions = ref<any[]>([])
+
 const rules = reactive({
   kag_url: [{ required: true, message: computed(() => t('views.knowledge.kag.form.kagUrlPlaceholder')), trigger: 'blur' }],
   kag_token: [{ required: true, message: computed(() => t('views.knowledge.kag.form.kagTokenPlaceholder')), trigger: 'blur' }]
@@ -112,13 +138,59 @@ function getApi() {
     return loadSharedApi({ type: 'knowledge', isShared: isShared.value, systemType: apiType.value })
 }
 
+const fetchOptions = useDebounceFn(() => {
+    if (form.value.kag_url && form.value.kag_token) {
+        loadOptionsData(form.value.kag_url, form.value.kag_token)
+    }
+}, 500)
+
+watch(() => [form.value.kag_url, form.value.kag_token], () => {
+    if (form.value.kag_url && form.value.kag_token) {
+        fetchOptions()
+    }
+})
+
+async function loadOptionsData(url: string, token: string) {
+    const api = getApi()
+    if (!api || !url || !token) return
+
+    const params = { kag_url: url, kag_token: token }
+    
+    const promises = []
+    
+    if (api.getKagPrompts) {
+        promises.push(api.getKagPrompts(id, params).then((res: any) => {
+            if (res.data) promptOptions.value = res.data
+        }))
+    }
+    
+    if (api.getKagLlmConfigs) {
+        promises.push(api.getKagLlmConfigs(id, { ...params, config_type: 'llm' }).then((res: any) => {
+             if (res.data) llmOptions.value = res.data
+        }))
+        
+        promises.push(api.getKagLlmConfigs(id, { ...params, config_type: 'embedding' }).then((res: any) => {
+             if (res.data) embeddingOptions.value = res.data
+        }))
+    }
+    
+    await Promise.all(promises)
+}
+
 function getConfig() {
   const api = getApi()
   if (api && api.getKagConfig) {
-      api.getKagConfig(id, loading).then((res: any) => {
+      loading.value = true
+      api.getKagConfig(id).then(async (res: any) => {
         if (res.data && Object.keys(res.data).length > 0) {
-            form.value = { ...form.value, ...res.data }
+            const data = res.data
+            if (data.kag_url && data.kag_token) {
+                 await loadOptionsData(data.kag_url, data.kag_token)
+            }
+            form.value = { ...form.value, ...data }
         }
+      }).finally(() => {
+          loading.value = false
       })
   }
 }

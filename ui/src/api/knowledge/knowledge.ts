@@ -539,6 +539,22 @@ const exportToKag: (
   return post(`${prefix.value}/${knowledge_id}/export_to_kag`, data, undefined, loading)
 }
 
+const getKagPrompts: (
+  knowledge_id: string,
+  params: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, params, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag/prompts`, params, undefined, loading)
+}
+
+const getKagLlmConfigs: (
+  knowledge_id: string,
+  params: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, params, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag/llm_configs`, params, undefined, loading)
+}
+
 export default {
   postKnowledgeGraphBinding,
   getKnowledgeGraphBindingList,
@@ -582,5 +598,7 @@ export default {
   importKnowledgeWorkflow,
   getKagConfig,
   putKagConfig,
-  exportToKag
+  exportToKag,
+  getKagPrompts,
+  getKagLlmConfigs
 }

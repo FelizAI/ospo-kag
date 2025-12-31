@@ -86,5 +86,7 @@ urlpatterns = [
     path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/knowledge_version/<str:knowledge_version_id>', views.KnowledgeWorkflowVersionView.Operate.as_view()),
     path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/graph_binding', views.KnowledgeGraphBindingView.as_view()),
     path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/kag_config', views.KnowledgeView.KagConfig.as_view()),
+    path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/kag/prompts', views.KnowledgeView.KagPrompts.as_view()),
+    path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/kag/llm_configs', views.KnowledgeView.KagLlmConfigs.as_view()),
     path('workspace/<str:workspace_id>/knowledge/<str:knowledge_id>/export_to_kag', views.KnowledgeView.ExportToKAG.as_view()),
 ]
