@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('knowledge', '0008_knowledge_graph_binding'),
+        ('knowledge', '0007_remote_knowledgeworkflowversion_workflow_and_more.py'),
     ]
 
     operations = [
