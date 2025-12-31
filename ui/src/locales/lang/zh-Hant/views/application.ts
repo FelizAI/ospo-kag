@@ -56,7 +56,7 @@ export default {
     roleSettings: {
       label: '系統提示詞',
       placeholder:
-        '系統提示詞，可以引用系統中的變數：{data} 是命中知識庫中的分段；{concept} 是從圖資料庫檢索出的概念節點；{triple} 是從圖資料庫檢索出的三元組資訊；{retrieval_content} 是從圖資料庫檢索出的 chunk 資訊；{question} 是用戶提出的問題。',
+        '系統提示詞，可以引用系統中的變數：{data} 是命中知識庫中的分段；{question} 是用戶提出的問題。',
       tooltip: '設定模型扮演的角色或遵循的指令',
     },
     prompt: {
@@ -64,14 +64,14 @@ export default {
       noReferences: ' (無引用知識庫)',
       references: ' (引用知識庫)',
       placeholder:
-        '用戶提示詞，可以引用系統中的變數：{data} 是命中知識庫中的分段；{concept} 是從圖資料庫檢索出的概念節點；{triple} 是從圖資料庫檢索出的三元組資訊；{retrieval_content} 是從圖資料庫檢索出的 chunk 資訊；{question} 是用戶提出的問題。',
+        '用戶提示詞，可以引用系統中的變數：{data} 是命中知識庫中的分段；{question} 是用戶提出的問題。',
       requiredMessage: '請輸入用戶提示詞',
       tooltip: '用戶向模型提出的問題或輸入的指令',
 
       noReferencesTooltip:
         '透過調整提示詞內容，可以引導大模型對話方向，該提示詞會被固定在上下文的開頭。可以使用變數：{question} 是用戶提出問題的佔位符。',
       referencesTooltip:
-        '透過調整提示詞內容，可以引導大模型對話方向，該提示詞會被固定在上下文的開頭。可以使用變數：{data} 是引用知識庫中分段的佔位符；{concept} 是圖資料庫概念節點佔位符；{triple} 是圖資料庫三元組資訊佔位符；{retrieval_content} 是圖資料庫 chunk 資訊佔位符；{question} 是用戶提出問題的佔位符。',
+        '透過調整提示詞內容，可以引導大模型對話方向，該提示詞會被固定在上下文的開頭。可以使用變數：{data} 是引用知識庫中分段的佔位符；{question} 是用戶提出問題的佔位符。',
       defaultPrompt: `已知資訊：{data}
 用戶問題：{question}
 回答要求：

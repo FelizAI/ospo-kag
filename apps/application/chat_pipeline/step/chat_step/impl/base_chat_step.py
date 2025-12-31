@@ -185,7 +185,6 @@ class BaseChatStep(IChatStep):
                 **kwargs):
         chat_model = get_model_instance_by_model_workspace_id(model_id, workspace_id,
                                                               **model_params_setting) if model_id is not None else None
-        print(f"调用大模型参数:{json.dumps([ml.model_dump() for ml in message_list],ensure_ascii=False)}")
         if stream:
             return self.execute_stream(message_list, chat_id, problem_text, post_response_handler, chat_model,
                                        paragraph_list,

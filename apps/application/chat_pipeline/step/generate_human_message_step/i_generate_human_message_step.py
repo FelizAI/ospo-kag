@@ -18,7 +18,6 @@ from application.chat_pipeline.pipeline_manage import PipelineManage
 from application.models import ChatRecord
 from application.serializers.application import NoReferencesSetting
 from common.field.common import InstanceField
-from common.utils.http_client import GraphQueryResult
 
 
 class IGenerateHumanMessageStep(IBaseChatPipelineStep):
@@ -28,7 +27,6 @@ class IGenerateHumanMessageStep(IBaseChatPipelineStep):
         # 段落列表
         paragraph_list = serializers.ListField(child=InstanceField(model_type=ParagraphPipelineModel, required=True),
                                                label=_("Paragraph List"))
-        graph_query_result = serializers.ListField(child=InstanceField(model_type=GraphQueryResult,required=True))
         # 历史对答
         history_chat_record = serializers.ListField(child=InstanceField(model_type=ChatRecord, required=True),
                                                     label=_("History Questions"))
@@ -63,7 +61,6 @@ class IGenerateHumanMessageStep(IBaseChatPipelineStep):
                 dialogue_number: int,
                 max_paragraph_char_number: int,
                 prompt: str,
-                graph_query_result:List[GraphQueryResult],
                 padding_problem_text: str = None,
                 no_references_setting=None,
                 system=None,

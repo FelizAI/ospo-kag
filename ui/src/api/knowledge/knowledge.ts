@@ -2,7 +2,7 @@ import { Result } from '@/request/Result'
 import { get, post, del, put, exportFile, exportExcel } from '@/request/index'
 import { type Ref } from 'vue'
 import type { Dict, pageRequest } from '@/api/type/common'
-import type { knowledgeData, KnowledgeGraphBindingItem } from '@/api/type/knowledge'
+import type { knowledgeData } from '@/api/type/knowledge'
 
 import useStore from '@/stores'
 import knowledge from '../system-shared/knowledge'
@@ -483,82 +483,7 @@ const getMcpTools: (
   return post(`${prefix.value}/${knowledge_id}/mcp_tools`, { mcp_servers }, {}, loading)
 }
 
-/**
- * 关联第三方系统
- * @param knowledge_id
- * @param instance_id
- */
-const postKnowledgeGraphBinding: (
-  knowledge_id: string,
-  instance_id: string,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, instance_id, loading) => {
-  return post(`${prefix.value}/${knowledge_id}/graph_binding`, { instance_id }, undefined, loading)
-}
-
-const getKnowledgeGraphBindingList: (
-  knowledge_id: string,
-  loading?: Ref<boolean>,
-) => Promise<Result<Array<KnowledgeGraphBindingItem>>> = (knowledge_id, loading) => {
-  return get(`${prefix.value}/${knowledge_id}/graph_binding`, undefined, loading)
-}
-
-const delKnowledgeGraphBinding: (
-  knowledge_id: string,
-  instance_id?: string,
-  loading?: Ref<boolean>,
-) => Promise<Result<boolean>> = (knowledge_id, instance_id, loading) => {
-  return del(
-    `${prefix.value}/${knowledge_id}/graph_binding`,
-    instance_id ? { instance_id } : undefined,
-    undefined,
-    loading,
-  )
-}
-
-const getKagConfig: (
-  knowledge_id: string,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, loading) => {
-  return get(`${prefix.value}/${knowledge_id}/kag_config`, undefined, loading)
-}
-
-const putKagConfig: (
-  knowledge_id: string,
-  data: any,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, data, loading) => {
-  return post(`${prefix.value}/${knowledge_id}/kag_config`, data, undefined, loading)
-}
-
-const exportToKag: (
-  knowledge_id: string,
-  data: any,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, data, loading) => {
-  return post(`${prefix.value}/${knowledge_id}/export_to_kag`, data, undefined, loading)
-}
-
-const getKagPrompts: (
-  knowledge_id: string,
-  params: any,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, params, loading) => {
-  return post(`${prefix.value}/${knowledge_id}/kag/prompts`, params, undefined, loading)
-}
-
-const getKagLlmConfigs: (
-  knowledge_id: string,
-  params: any,
-  loading?: Ref<boolean>
-) => Promise<Result<any>> = (knowledge_id, params, loading) => {
-  return post(`${prefix.value}/${knowledge_id}/kag/llm_configs`, params, undefined, loading)
-}
-
 export default {
-  postKnowledgeGraphBinding,
-  getKnowledgeGraphBindingList,
-  delKnowledgeGraphBinding,
   getKnowledgeList,
   getKnowledgeListPage,
   getKnowledgeDetail,
@@ -595,10 +520,5 @@ export default {
   getWorkflowActionPage,
   cancelWorkflowAction,
   exportKnowledgeWorkflow,
-  importKnowledgeWorkflow,
-  getKagConfig,
-  putKagConfig,
-  exportToKag,
-  getKagPrompts,
-  getKagLlmConfigs
+  importKnowledgeWorkflow
 }

@@ -6,7 +6,6 @@
     @date：2024/1/9 18:10
     @desc: 检索知识库
 """
-import json
 import re
 from abc import abstractmethod
 from typing import List, Type
@@ -17,8 +16,6 @@ from rest_framework import serializers
 
 from application.chat_pipeline.I_base_chat_pipeline import IBaseChatPipelineStep, ParagraphPipelineModel
 from application.chat_pipeline.pipeline_manage import PipelineManage
-from common.field.common import InstanceField
-from common.utils.http_client import GraphQueryResult
 
 
 class ISearchDatasetStep(IBaseChatPipelineStep):
@@ -53,11 +50,9 @@ class ISearchDatasetStep(IBaseChatPipelineStep):
         return self.InstanceSerializer
 
     def _run(self, manage: PipelineManage):
-        paragraph_list,graph_query_result = self.execute(**self.context['step_args'], manage=manage)
+        paragraph_list = self.execute(**self.context['step_args'], manage=manage)
         manage.context['paragraph_list'] = paragraph_list
         self.context['paragraph_list'] = paragraph_list
-        self.context['graph_query_result'] = graph_query_result
-        manage.context['graph_query_result'] = graph_query_result
 
     @abstractmethod
     def execute(self, problem_text: str, knowledge_id_list: list[str], exclude_document_id_list: list[str],
@@ -65,7 +60,7 @@ class ISearchDatasetStep(IBaseChatPipelineStep):
                 search_mode: str = None,
                 workspace_id=None,
                 manage: PipelineManage = None,
-                **kwargs) -> tuple[List[ParagraphPipelineModel],List[GraphQueryResult]]:
+                **kwargs) -> List[ParagraphPipelineModel]:
         """
         关于 用户和补全问题 说明: 补全问题如果有就使用补全问题去查询 反之就用用户原始问题查询
         :param similarity:                         相关性
