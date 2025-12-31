@@ -11,11 +11,19 @@ from common.result import result
 from knowledge.api.knowledge import KnowledgeBaseCreateAPI, KnowledgeWebCreateAPI, KnowledgeTreeReadAPI, \
     KnowledgeEditAPI, KnowledgeReadAPI, KnowledgePageAPI, SyncWebAPI, GenerateRelatedAPI, HitTestAPI, EmbeddingAPI, \
     GetModelAPI, KnowledgeExportAPI
-from knowledge.models import KnowledgeScope
+from knowledge.models import KnowledgeScope, KnowledgeKagConfig, Paragraph, Document, Knowledge
 from knowledge.serializers.common import get_knowledge_operation_object
 from knowledge.serializers.knowledge import KnowledgeSerializer
+from knowledge.serializers.kag_config import KnowledgeKagConfigSerializer, ExportToKAGSerializer
 from models_provider.serializers.model_serializer import ModelSerializer
+import requests
+import json
+import io
+import datetime
 from tools.api.tool import GetInternalToolAPI
+import logging
+
+maxkb_logger = logging.getLogger(__name__)
 
 
 class KnowledgeView(APIView):
@@ -413,6 +421,133 @@ class KnowledgeView(APIView):
                 'workspace_id': workspace_id,
                 'knowledge_ids': request.query_params.getlist('knowledge_ids[]')
             }).list())
+
+    class KagConfig(APIView):
+        authentication_classes = [TokenAuth]
+
+        @has_permissions(
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_knowledge_permission(),
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_permission_workspace_manage_role(),
+            RoleConstants.WORKSPACE_MANAGE.get_workspace_role(),
+            ViewPermission([RoleConstants.USER.get_workspace_role()],
+                           [PermissionConstants.KNOWLEDGE.get_workspace_knowledge_permission()], CompareConstants.AND),
+        )
+        def get(self, request: Request, workspace_id: str, knowledge_id: str):
+            config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+            if not config:
+                return result.success({})
+            return result.success(KnowledgeKagConfigSerializer(config).data)
+
+        @has_permissions(
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_knowledge_permission(),
+            PermissionConstants.KNOWLEDGE_EDIT.get_workspace_permission_workspace_manage_role(),
+            RoleConstants.WORKSPACE_MANAGE.get_workspace_role(),
+            ViewPermission([RoleConstants.USER.get_workspace_role()],
+                           [PermissionConstants.KNOWLEDGE.get_workspace_knowledge_permission()], CompareConstants.AND),
+        )
+        def post(self, request: Request, workspace_id: str, knowledge_id: str):
+            config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+            data = request.data
+            data['knowledge'] = knowledge_id
+            
+            # Auto-fill task_name if missing, to satisfy model constraint
+            if not data.get('task_name'):
+                knowledge = Knowledge.objects.filter(id=knowledge_id).first()
+                if knowledge:
+                    data['task_name'] = knowledge.name
+                else:
+                     data['task_name'] = 'DefaultTaskName'
+
+            if config:
+                serializer = KnowledgeKagConfigSerializer(config, data=data)
+            else:
+                serializer = KnowledgeKagConfigSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(knowledge_id=knowledge_id)
+            return result.success(serializer.data)
+
+    class ExportToKAG(APIView):
+        authentication_classes = [TokenAuth]
+
+        @has_permissions(
+            PermissionConstants.KNOWLEDGE_EXPORT.get_workspace_knowledge_permission(),
+            PermissionConstants.KNOWLEDGE_EXPORT.get_workspace_permission_workspace_manage_role(),
+            RoleConstants.WORKSPACE_MANAGE.get_workspace_role(),
+            ViewPermission([RoleConstants.USER.get_workspace_role()],
+                           [PermissionConstants.KNOWLEDGE.get_workspace_knowledge_permission()], CompareConstants.AND),
+        )
+        def post(self, request: Request, workspace_id: str, knowledge_id: str):
+            # 1. Prepare parameters
+            data = request.data.copy()
+            # If parameters are missing, try to load from saved config
+            required_fields = ['kag_url', 'kag_token']
+            if any(field not in data for field in required_fields):
+                config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+                if config:
+                    if 'kag_url' not in data: data['kag_url'] = config.kag_url
+                    if 'kag_token' not in data: data['kag_token'] = config.kag_token
+                    # task_name is ignored here, will be generated
+                    if 'llm_config_id' not in data and config.llm_config_id: data['llm_config_id'] = config.llm_config_id
+                    if 'embedding_config_id' not in data and config.embedding_config_id: data['embedding_config_id'] = config.embedding_config_id
+                    if 'prompt_id' not in data and config.prompt_id: data['prompt_id'] = config.prompt_id
+                    if 'extraction_rounds' not in data: data['extraction_rounds'] = config.extraction_rounds
+            
+            serializer = ExportToKAGSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            validated_data = serializer.validated_data
+
+            # 2. Generate JSONL file
+            paragraphs = Paragraph.objects.filter(knowledge_id=knowledge_id).select_related('document')
+            jsonl_content = io.StringIO()
+            for p in paragraphs:
+                line = {
+                    "content": p.content,
+                    "source": p.document.name if p.document else "",
+                    "index": p.position
+                }
+                jsonl_content.write(json.dumps(line, ensure_ascii=False) + '\n')
+            
+            file_content = jsonl_content.getvalue().encode('utf-8')
+            file_obj = io.BytesIO(file_content)
+            file_obj.name = 'chunks.jsonl'
+
+            # 3. Call KAG API
+            try:
+                knowledge = Knowledge.objects.filter(id=knowledge_id).first()
+                knowledge_name = knowledge.name if knowledge else "knowledge"
+                generated_task_name = f"MaxKB-{knowledge_name}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+                files = {'file': ('chunks.jsonl', file_obj, 'application/json')}
+                payload = {
+                    'task_name': generated_task_name,
+                    'username': 'admin',  # Default as requested
+                    'extraction_rounds': validated_data.get('extraction_rounds', 1)
+                }
+                if validated_data.get('llm_config_id'):
+                    payload['llm_config_id'] = validated_data['llm_config_id']
+                if validated_data.get('embedding_config_id'):
+                    payload['embedding_config_id'] = validated_data['embedding_config_id']
+                if validated_data.get('prompt_id'):
+                    payload['prompt_id'] = validated_data['prompt_id']
+
+                headers = {
+                    'X-API-Token': f"{validated_data['kag_token']}"
+                }
+                
+                # Use verify=False to avoid SSL issues if KAG is self-signed, or remove if not needed.
+                # Assuming standard behavior for now.
+                response = requests.post(
+                    f"{validated_data['kag_url'].rstrip('/')}/api/v1/external/tasks/import",
+                    headers=headers,
+                    data=payload,
+                    files=files,
+                    timeout=300
+                )
+                response.raise_for_status()
+                return result.success(response.json())
+            except Exception as e:
+                maxkb_logger.error(f"Failed to export to KAG: {str(e)}")
+                return result.error(f"KAG Import Failed: {str(e)}")
 
 
 class KnowledgeBaseView(APIView):

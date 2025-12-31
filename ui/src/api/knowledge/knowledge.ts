@@ -516,6 +516,29 @@ const delKnowledgeGraphBinding: (
   )
 }
 
+const getKagConfig: (
+  knowledge_id: string,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, loading) => {
+  return get(`${prefix.value}/${knowledge_id}/kag_config`, undefined, loading)
+}
+
+const putKagConfig: (
+  knowledge_id: string,
+  data: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, data, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag_config`, data, undefined, loading)
+}
+
+const exportToKag: (
+  knowledge_id: string,
+  data: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, data, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/export_to_kag`, data, undefined, loading)
+}
+
 export default {
   postKnowledgeGraphBinding,
   getKnowledgeGraphBindingList,
@@ -556,5 +579,8 @@ export default {
   getWorkflowActionPage,
   cancelWorkflowAction,
   exportKnowledgeWorkflow,
-  importKnowledgeWorkflow
+  importKnowledgeWorkflow,
+  getKagConfig,
+  putKagConfig,
+  exportToKag
 }

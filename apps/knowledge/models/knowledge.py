@@ -9,6 +9,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.models import MPTTModel
 
@@ -428,3 +429,22 @@ def on_delete_file(sender, instance, **kwargs):
     exist = QuerySet(File).filter(loid=instance.loid).exclude(id=instance.id).exists()
     if not exist:
         select_one(f'SELECT lo_unlink({instance.loid})', [])
+
+
+class KnowledgeKagConfig(AppModelMixin):
+    """
+    知识库KAG配置表
+    """
+    id = models.UUIDField(primary_key=True, max_length=128, default=uuid.uuid7, editable=False, verbose_name="主键id")
+    knowledge = models.OneToOneField(Knowledge, on_delete=models.CASCADE, verbose_name="知识库",
+                                     db_constraint=False, related_name='kag_config')
+    kag_url = models.URLField(verbose_name=_("KAG系统地址"))
+    kag_token = models.CharField(max_length=512, verbose_name=_("KAG Token"))
+    task_name = models.CharField(max_length=128, verbose_name=_("任务名称"))
+    llm_config_id = models.IntegerField(verbose_name=_("LLM配置ID"), null=True, blank=True)
+    embedding_config_id = models.IntegerField(verbose_name=_("Embedding配置ID"), null=True, blank=True)
+    prompt_id = models.CharField(max_length=64, verbose_name=_("Prompt ID"), null=True, blank=True)
+    extraction_rounds = models.IntegerField(verbose_name=_("抽取轮数"), default=1)
+
+    class Meta:
+        db_table = "knowledge_kag_config"
