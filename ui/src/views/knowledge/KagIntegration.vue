@@ -62,7 +62,7 @@
                  </el-col>
                  <el-col :span="12">
                   <el-form-item :label="$t('views.knowledge.kag.form.extractionRounds')" prop="extraction_rounds">
-                    <el-input-number v-model="form.extraction_rounds" :min="1" controls-position="right" class="w-full" />
+                    <el-input-number v-model="form.extraction_rounds" :min="1" :max="5" controls-position="right" class="w-full" />
                   </el-form-item>
                  </el-col>
               </el-row>
