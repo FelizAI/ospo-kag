@@ -7,8 +7,8 @@ services:
       dockerfile: installer/Dockerfile
       args:
         MAXKB_SANDBOX_HOME: /opt/maxkb-app/sandbox
-          - http_proxy=${http_proxy}
-          - https_proxy=${https_proxy}
+        http_proxy: ${http_proxy}
+        https_proxy: ${https_proxy}
     container_name: maxkb-app
     restart: unless-stopped
     env_file:
