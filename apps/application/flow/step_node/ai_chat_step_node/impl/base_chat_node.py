@@ -198,8 +198,6 @@ class BaseChatNode(IChatNode):
         if stream:
             r = chat_model.stream(message_list)
             return NodeResult({'result': r, 'chat_model': chat_model, 'message_list': message_list,
-                               'history_message': [{'content': message.content, 'role': message.type} for message in
-                                                   (history_message if history_message is not None else [])],
                                'question': question.content}, {},
                               _write_context=write_context_stream)
         else:
