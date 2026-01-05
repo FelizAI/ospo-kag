@@ -23,12 +23,16 @@ RUN python3 -m uv pip install \
     -r pyproject.toml
 RUN find /opt/maxkb-app  -depth \( -name ".git*" -o -name ".docker*" -o -name ".idea*" -o -name ".editorconfig*" -o -name ".prettierrc*" -o -name "README.md" -o -name "poetry.lock" -o -name "pyproject.toml"  \) -exec rm -rf {} +
 
-
-RUN rm -rf /opt/maxkb-app/ui && \
-    python /opt/maxkb-app/apps/manage.py compilemessages && \
-    export PIP_TARGET=/opt/maxkb-app/sandbox/python-packages && \
-    python -m uv pip install --target=$PIP_TARGET requests pymysql psycopg2-binary && \
-    rm -rf /opt/maxkb-app/installer
+RUN rm -rf /opt/maxkb-app/ui
+RUN python /opt/maxkb-app/apps/manage.py compilemessages
+RUN export PIP_TARGET=/opt/maxkb-app/sandbox/python-packages
+RUN python -m uv pip install --index-url https://mirrors.aliyun.com/pypi/simple/ --target=$PIP_TARGET requests pymysql psycopg2-binary
+RUN rm -rf /opt/maxkb-app/installer
+#RUN rm -rf /opt/maxkb-app/ui && \
+#    python /opt/maxkb-app/apps/manage.py compilemessages && \
+#    export PIP_TARGET=/opt/maxkb-app/sandbox/python-packages && \
+#    python -m uv pip install --target=$PIP_TARGET requests pymysql psycopg2-binary && \
+#    rm -rf /opt/maxkb-app/installer
 COPY --from=web-build --chmod=700 ui /opt/maxkb-app/ui
 
 FROM ghcr.io/1panel-dev/maxkb-base:python3.11-pg17.6
