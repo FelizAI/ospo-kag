@@ -14,11 +14,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/maxkb-app
 ARG MAXKB_SANDBOX_HOME
-RUN pip install uv --break-system-packages
-RUN gcc -shared -fPIC -o ${MAXKB_SANDBOX_HOME}/lib/sandbox.so /opt/maxkb-app/installer/sandbox.c -ldl && \
-    rm -rf /opt/maxkb-app/ui && \
-    python -m uv pip install -r pyproject.toml && \
-    find /opt/maxkb-app  -depth \( -name ".git*" -o -name ".docker*" -o -name ".idea*" -o -name ".editorconfig*" -o -name ".prettierrc*" -o -name "README.md" -o -name "poetry.lock" -o -name "pyproject.toml"  \) -exec rm -rf {} + && \
+
+RUN gcc -shared -fPIC -o ${MAXKB_SANDBOX_HOME}/lib/sandbox.so /opt/maxkb-app/installer/sandbox.c -ldl
+RUN pip install uv --break-system-packages && \
+    python -m uv pip install -r pyproject.toml
+
+RUN find /opt/maxkb-app  -depth \( -name ".git*" -o -name ".docker*" -o -name ".idea*" -o -name ".editorconfig*" -o -name ".prettierrc*" -o -name "README.md" -o -name "poetry.lock" -o -name "pyproject.toml"  \) -exec rm -rf {} +
+
+
+RUN rm -rf /opt/maxkb-app/ui && \
     python /opt/maxkb-app/apps/manage.py compilemessages && \
     export PIP_TARGET=/opt/maxkb-app/sandbox/python-packages && \
     python -m uv pip install --target=$PIP_TARGET requests pymysql psycopg2-binary && \
