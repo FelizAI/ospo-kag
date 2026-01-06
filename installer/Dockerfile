@@ -26,7 +26,7 @@ RUN find /opt/maxkb-app  -depth \( -name ".git*" -o -name ".docker*" -o -name ".
 RUN rm -rf /opt/maxkb-app/ui
 RUN python /opt/maxkb-app/apps/manage.py compilemessages
 RUN export PIP_TARGET=/opt/maxkb-app/sandbox/python-packages
-RUN python -m uv pip install --index-url https://mirrors.aliyun.com/pypi/simple/ --target=$PIP_TARGET requests pymysql psycopg2-binary
+RUN python -m uv pip install --index-url https://mirrors.aliyun.com/pypi/simple/ requests pymysql psycopg2-binary
 RUN rm -rf /opt/maxkb-app/installer
 #RUN rm -rf /opt/maxkb-app/ui && \
 #    python /opt/maxkb-app/apps/manage.py compilemessages && \
@@ -36,9 +36,6 @@ RUN rm -rf /opt/maxkb-app/installer
 COPY --from=web-build --chmod=700 ui /opt/maxkb-app/ui
 
 FROM ghcr.io/1panel-dev/maxkb-base:python3.11-pg17.6
-ARG DOCKER_IMAGE_TAG=dev \
-    BUILD_AT \
-    GITHUB_COMMIT
 
 WORKDIR /opt/maxkb-app
 COPY --from=stage-build /opt/maxkb-app /opt/maxkb-app
