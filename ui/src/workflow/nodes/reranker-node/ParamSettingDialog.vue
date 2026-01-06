@@ -29,7 +29,6 @@
             </template>
             <el-input-number
               v-model="form.similarity"
-              :max="form.search_mode === 'blend' ? 2 : 1"
               :precision="3"
               :step="0.1"
               :value-on-clear="0"

@@ -21,7 +21,7 @@ class RerankerSettingSerializer(serializers.Serializer):
     top_n = serializers.IntegerField(required=True,
                                      label=_("Reference segment number"))
     # 相似度 0-1之间
-    similarity = serializers.FloatField(required=True, max_value=2, min_value=0,
+    similarity = serializers.FloatField(required=True,
                                         label=_("Reference segment number"))
     max_paragraph_char_number = serializers.IntegerField(required=True,
                                                          label=_("Maximum number of words in a quoted segment"))
