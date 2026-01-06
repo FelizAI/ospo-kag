@@ -169,7 +169,7 @@
                             :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" 
                             clearable 
                             class="w-full"
-                            @change="(val) => form.kag_pipeline_config.disambiguation_config.prompt_id = val"
+                            @change="(val: any) => form.kag_pipeline_config.disambiguation_config.prompt_id = val"
                         >
                           <el-option v-for="item in disambiguationPromptOptions" :key="item.id" :label="item.name" :value="item.id" />
                         </el-select>
