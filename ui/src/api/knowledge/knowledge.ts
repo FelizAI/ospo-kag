@@ -483,6 +483,46 @@ const getMcpTools: (
   return post(`${prefix.value}/${knowledge_id}/mcp_tools`, { mcp_servers }, {}, loading)
 }
 
+
+const getKagConfig: (
+  knowledge_id: string,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, loading) => {
+  return get(`${prefix.value}/${knowledge_id}/kag_config`, undefined, loading)
+}
+
+const putKagConfig: (
+  knowledge_id: string,
+  data: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, data, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag_config`, data, undefined, loading)
+}
+
+const exportToKag: (
+  knowledge_id: string,
+  data: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, data, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/export_to_kag`, data, undefined, loading)
+}
+
+const getKagPrompts: (
+  knowledge_id: string,
+  params: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, params, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag/prompts`, params, undefined, loading)
+}
+
+const getKagLlmConfigs: (
+  knowledge_id: string,
+  params: any,
+  loading?: Ref<boolean>
+) => Promise<Result<any>> = (knowledge_id, params, loading) => {
+  return post(`${prefix.value}/${knowledge_id}/kag/llm_configs`, params, undefined, loading)
+}
+
 export default {
   getKnowledgeList,
   getKnowledgeListPage,
@@ -520,5 +560,10 @@ export default {
   getWorkflowActionPage,
   cancelWorkflowAction,
   exportKnowledgeWorkflow,
-  importKnowledgeWorkflow
+  importKnowledgeWorkflow,
+  getKagConfig,
+  putKagConfig,
+  exportToKag,
+  getKagPrompts,
+  getKagLlmConfigs
 }
