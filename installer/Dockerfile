@@ -1,4 +1,7 @@
 FROM node:24-alpine AS web-build
+RUN npm config set registry https://mirrors.cloud.tencent.com/npm/ && \
+    sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+    apk add --no-cache python3 make g++
 COPY ui ui
 RUN cd ui && ls -la && if [ -d "dist" ]; then exit 0; fi && \
     npm install --prefer-offline --no-audit && \
