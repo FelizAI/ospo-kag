@@ -117,6 +117,18 @@ export default {
       promptId: 'Prompt Config',
       promptIdPlaceholder: 'Optional',
       extractionRounds: 'Extraction Rounds',
+      llmConfigIdOverride: 'LLM Config (Override)',
+      embeddingConfigIdOverride: 'Embedding Config (Override)',
+      algorithmType: 'Algorithm Type',
+    },
+    pipelineConfig: 'Pipeline Configuration',
+    tab: {
+      extraction: 'Extraction',
+      disambiguation: 'Disambiguation',
+      relationExtraction: 'Relation Extraction',
+      tripleRefinement: 'Triple Refinement',
+      predicateRefinement: 'Predicate Refinement',
+      graphDb: 'Graph DB',
     },
     button: {
       save: 'Save Config',

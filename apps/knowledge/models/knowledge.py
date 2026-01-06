@@ -445,6 +445,7 @@ class KnowledgeKagConfig(AppModelMixin):
     embedding_config_id = models.IntegerField(verbose_name=_("Embedding配置ID"), null=True, blank=True)
     prompt_id = models.CharField(max_length=64, verbose_name=_("Prompt ID"), null=True, blank=True)
     extraction_rounds = models.IntegerField(verbose_name=_("抽取轮数"), default=1)
+    kag_pipeline_config = models.JSONField(verbose_name=_("KAG Pipeline配置"), default=dict, blank=True)
 
     class Meta:
         db_table = "knowledge_kag_config"

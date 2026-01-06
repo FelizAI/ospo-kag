@@ -479,6 +479,7 @@ class KnowledgeView(APIView):
         def post(self, request: Request, workspace_id: str, knowledge_id: str):
             kag_url = request.data.get('kag_url')
             kag_token = request.data.get('kag_token')
+            task_type_str = request.data.get('task_type')
 
             if not kag_url or not kag_token:
                 config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
@@ -489,15 +490,43 @@ class KnowledgeView(APIView):
             if not kag_url or not kag_token:
                 return result.success([])
 
+            # Determine task type
+            valid_task_types = [
+                'EXTRACTION',
+                'DISAMBIGUATION',
+                'RELATION_EXTRACTION',
+                'PREDICATE_REFINEMENT',
+                'TRIPLE_REFINEMENT'
+            ]
+            
+            task_type = 'EXTRACTION' # Default
+            
+            if task_type_str:
+                upper_type = task_type_str.upper()
+                if upper_type in valid_task_types:
+                    task_type = upper_type
+                else:
+                    # Invalid type provided, return empty
+                    return result.success([])
+
             try:
+                params = {
+                    'username': 'admin',
+                    'taskType': task_type
+                }
+                
                 response = requests.get(
                     f"{kag_url.rstrip('/')}/api/v1/external/prompts",
-                    params={'username': 'admin'},
+                    params=params,
                     headers={'X-API-Token': kag_token},
                     timeout=10
                 )
                 if response.status_code == 200:
-                    return result.success(response.json())
+                    data = response.json()
+                    # Inject type field to reflect actual type
+                    for item in data:
+                        item['type'] = task_type
+                    return result.success(data)
                 return result.success([])
             except Exception as e:
                 maxkb_logger.error(f"Failed to fetch KAG prompts: {str(e)}")
@@ -558,18 +587,16 @@ class KnowledgeView(APIView):
         def post(self, request: Request, workspace_id: str, knowledge_id: str):
             # 1. Prepare parameters
             data = request.data.copy()
-            # If parameters are missing, try to load from saved config
-            required_fields = ['kag_url', 'kag_token']
-            if any(field not in data for field in required_fields):
-                config = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
-                if config:
-                    if 'kag_url' not in data: data['kag_url'] = config.kag_url
-                    if 'kag_token' not in data: data['kag_token'] = config.kag_token
-                    # task_name is ignored here, will be generated
-                    if 'llm_config_id' not in data and config.llm_config_id: data['llm_config_id'] = config.llm_config_id
-                    if 'embedding_config_id' not in data and config.embedding_config_id: data['embedding_config_id'] = config.embedding_config_id
-                    if 'prompt_id' not in data and config.prompt_id: data['prompt_id'] = config.prompt_id
-                    if 'extraction_rounds' not in data: data['extraction_rounds'] = config.extraction_rounds
+            
+            # Load config from DB if not provided
+            config_record = KnowledgeKagConfig.objects.filter(knowledge_id=knowledge_id).first()
+            if config_record:
+                if 'kag_url' not in data: data['kag_url'] = config_record.kag_url
+                if 'kag_token' not in data: data['kag_token'] = config_record.kag_token
+                # if 'task_name' not in data: data['task_name'] = config_record.task_name
+                
+                if 'config' not in data and config_record.kag_pipeline_config:
+                    data['config'] = config_record.kag_pipeline_config
             
             serializer = ExportToKAGSerializer(data=data)
             serializer.is_valid(raise_exception=True)
@@ -593,35 +620,30 @@ class KnowledgeView(APIView):
             # 3. Call KAG API
             try:
                 knowledge = Knowledge.objects.filter(id=knowledge_id).first()
-                knowledge_name = knowledge.name if knowledge else "knowledge"
+                knowledge_name = knowledge.name if knowledge else knowledge_id
                 generated_task_name = f"MaxKB-{knowledge_name}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
-
-                files = {'file': ('chunks.jsonl', file_obj, 'application/json')}
+                # Prepare multipart/form-data
+                files = {'files': ('chunks.jsonl', file_obj, 'application/json')}
+                
+                # Prepare form fields
                 payload = {
+                    'username': 'admin',  # Default user
                     'task_name': generated_task_name,
-                    'username': 'admin',  # Default as requested
-                    'extraction_rounds': validated_data.get('extraction_rounds', 1)
+                    'config': json.dumps(validated_data['config'])
                 }
-                if validated_data.get('llm_config_id'):
-                    payload['llm_config_id'] = validated_data['llm_config_id']
-                if validated_data.get('embedding_config_id'):
-                    payload['embedding_config_id'] = validated_data['embedding_config_id']
-                if validated_data.get('prompt_id'):
-                    payload['prompt_id'] = validated_data['prompt_id']
 
                 headers = {
-                    'X-API-Token': f"{validated_data['kag_token']}"
+                    'x-api-token': validated_data['kag_token']
                 }
                 
-                # Use verify=False to avoid SSL issues if KAG is self-signed, or remove if not needed.
-                # Assuming standard behavior for now.
                 response = requests.post(
-                    f"{validated_data['kag_url'].rstrip('/')}/api/v1/external/tasks/import",
+                    f"{validated_data['kag_url'].rstrip('/')}/api/v1/external/pipelines/kg-build",
                     headers=headers,
                     data=payload,
                     files=files,
                     timeout=300
                 )
+                
                 if response.status_code != 200:
                     error_msg = f"KAG Import Failed: {response.status_code} - {response.text}"
                     maxkb_logger.error(error_msg)
