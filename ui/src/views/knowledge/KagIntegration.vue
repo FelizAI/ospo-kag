@@ -163,13 +163,12 @@
                         </el-form-item>
                       </el-col>
                     </el-row>
-                     <el-form-item label="FAISS Prompt">
+                      <el-form-item label="FAISS Prompt">
                         <el-select 
                             v-model="form.kag_pipeline_config.disambiguation_config.faiss_prompt" 
                             :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" 
                             clearable 
                             class="w-full"
-                            @change="(val: any) => form.kag_pipeline_config.disambiguation_config.prompt_id = val"
                         >
                           <el-option v-for="item in disambiguationPromptOptions" :key="item.id" :label="item.name" :value="item.id" />
                         </el-select>
@@ -178,7 +177,7 @@
 
                    <el-divider content-position="left">Common</el-divider>
                    <el-row :gutter="20">
-                      <el-col :span="8" v-if="form.kag_pipeline_config.disambiguation_config.algorithm_type !== 'faiss'">
+                      <el-col :span="8">
                         <el-form-item :label="$t('views.knowledge.kag.form.promptId')">
                           <el-select v-model="form.kag_pipeline_config.disambiguation_config.prompt_id" :placeholder="$t('views.knowledge.kag.form.promptIdPlaceholder')" clearable class="w-full">
                             <el-option v-for="item in disambiguationPromptOptions" :key="item.id" :label="item.name" :value="item.id" />
@@ -544,11 +543,6 @@ async function saveConfig() {
   // Clean nested configs
   const pipeline = payload.kag_pipeline_config
   if (pipeline) {
-      // Logic Update: If algorithm is FAISS, sync prompt_id from faiss_prompt
-      if (pipeline.disambiguation_config && pipeline.disambiguation_config.algorithm_type === 'faiss') {
-          pipeline.disambiguation_config.prompt_id = pipeline.disambiguation_config.faiss_prompt
-      }
-
       ['extraction_config', 'disambiguation_config', 'relation_extraction_config', 'triple_refinement_config', 'predicate_refinement_config', 'graph_db_config'].forEach(key => {
           if (pipeline[key]) {
               pipeline[key].llm_config_id = cleanId(pipeline[key].llm_config_id)
@@ -581,11 +575,6 @@ async function handleExport() {
   
   const pipeline = payload.kag_pipeline_config
    if (pipeline) {
-      // Logic Update: If algorithm is FAISS, sync prompt_id from faiss_prompt
-      if (pipeline.disambiguation_config && pipeline.disambiguation_config.algorithm_type === 'faiss') {
-          pipeline.disambiguation_config.prompt_id = pipeline.disambiguation_config.faiss_prompt
-      }
-
       ['extraction_config', 'disambiguation_config', 'relation_extraction_config', 'triple_refinement_config', 'predicate_refinement_config', 'graph_db_config'].forEach(key => {
           if (pipeline[key]) {
               pipeline[key].llm_config_id = cleanId(pipeline[key].llm_config_id)
