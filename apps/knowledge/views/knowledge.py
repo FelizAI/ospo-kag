@@ -608,6 +608,7 @@ class KnowledgeView(APIView):
             for p in paragraphs:
                 line = {
                     "content": p.content,
+                    "title": p.title if p.title else "",
                     "source": p.document.name if p.document else "",
                     "index": p.position
                 }
