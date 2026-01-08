@@ -49,7 +49,7 @@ class PredicateRefinementPipelineConfigSerializer(serializers.Serializer):
 
 class GraphDBPipelineConfigSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
-    description = serializers.CharField(default="Created via External API", required=False)
+    description = serializers.CharField(default="Created via External API", required=False, allow_blank=True)
     embedding_config_id = serializers.IntegerField(required=False, allow_null=True)
 
 

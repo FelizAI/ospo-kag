@@ -604,12 +604,19 @@ class KnowledgeView(APIView):
 
             # 2. Generate JSONL file
             paragraphs = Paragraph.objects.filter(knowledge_id=knowledge_id).select_related('document')
+            knowledge_obj = Knowledge.objects.filter(id=knowledge_id).first()
+            knowledge_name_str = knowledge_obj.name if knowledge_obj else ""
+
             jsonl_content = io.StringIO()
             for p in paragraphs:
                 line = {
+                    "id": str(p.id),
                     "content": p.content,
                     "title": p.title if p.title else "",
-                    "source": p.document.name if p.document else "",
+                    "document_name": p.document.name if p.document else "",
+                    "knowledge_name": knowledge_name_str,
+                    "knowledge_id": str(knowledge_id),
+                    "document_id": str(p.document_id) if p.document_id else "",
                     "index": p.position
                 }
                 jsonl_content.write(json.dumps(line, ensure_ascii=False) + '\n')
