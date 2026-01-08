@@ -133,12 +133,14 @@ export default {
     button: {
       save: 'Save Config',
       export: 'Export to KAG',
+      import: 'Import Config',
     },
     message: {
       saveSuccess: 'Saved successfully',
       exportSent: 'Export request sent',
       apiUnavailable: 'API not available',
       taskComplete: 'Operation complete',
+      importSuccess: 'Imported successfully',
     },
   },
 }

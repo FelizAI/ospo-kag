@@ -299,6 +299,16 @@
 
             </el-form>
             <div class="text-right mt-16">
+              <el-upload
+                action=""
+                :auto-upload="false"
+                :show-file-list="false"
+                accept=".json"
+                :on-change="handleImportFile"
+                style="display: inline-block; margin-right: 12px;"
+              >
+                <el-button>{{ $t('views.knowledge.kag.button.import') }}</el-button>
+              </el-upload>
               <el-button @click="saveConfig" type="primary">{{ $t('views.knowledge.kag.button.save') }}</el-button>
               <el-button @click="handleExport" type="success" :loading="exportLoading">{{ $t('views.knowledge.kag.button.export') }}</el-button>
             </div>
@@ -527,6 +537,42 @@ function getConfig() {
           loading.value = false
       })
   }
+}
+
+function handleImportFile(file: any) {
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const result = e.target?.result as string
+      const data = JSON.parse(result)
+
+      if (data.llm_config_id !== undefined) form.value.llm_config_id = data.llm_config_id
+      if (data.embedding_config_id !== undefined) form.value.embedding_config_id = data.embedding_config_id
+
+      const pipelineKeys = [
+        'extraction_config',
+        'disambiguation_config',
+        'relation_extraction_config',
+        'triple_refinement_config',
+        'predicate_refinement_config',
+        'graph_db_config'
+      ]
+
+      pipelineKeys.forEach(key => {
+        if (data[key]) {
+          form.value.kag_pipeline_config[key] = {
+            ...form.value.kag_pipeline_config[key],
+            ...data[key]
+          }
+        }
+      })
+
+      MsgSuccess(t('views.knowledge.kag.message.importSuccess'))
+    } catch (error) {
+      MsgError('Invalid JSON file')
+    }
+  }
+  reader.readAsText(file.raw)
 }
 
 async function saveConfig() {

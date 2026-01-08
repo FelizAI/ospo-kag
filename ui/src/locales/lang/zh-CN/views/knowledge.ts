@@ -137,12 +137,14 @@ export default {
     button: {
       save: '保存配置',
       export: '导入到 KAG',
+      import: '导入配置',
     },
     message: {
       saveSuccess: '保存成功',
       exportSent: '导入请求已发送',
       apiUnavailable: 'API 不可用',
       taskComplete: '操作完成',
+      importSuccess: '导入成功',
     },
   },
 }
