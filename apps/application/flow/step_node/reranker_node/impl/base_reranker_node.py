@@ -15,20 +15,47 @@ from application.flow.step_node.reranker_node.i_reranker_node import IRerankerNo
 from models_provider.tools import get_model_instance_by_model_workspace_id
 
 
-def merge_reranker_list(reranker_list, result=None):
+def _merge_metadata(target_meta, source_dict):
+    keys_to_merge = ['knowledge_name', 'document_name', 'source', 'url']
+    for key in keys_to_merge:
+        if key in source_dict:
+            val_new = str(source_dict[key])
+            val_old = str(target_meta.get(key, ''))
+            if not val_old:
+                target_meta[key] = val_new
+            else:
+                parts = [p.strip() for p in val_old.split(',') if p.strip()]
+                if val_new not in parts:
+                    parts.append(val_new)
+                    target_meta[key] = ', '.join(parts)
+
+
+def merge_reranker_list(reranker_list, result=None, seen_contents=None):
     if result is None:
         result = []
+    if seen_contents is None:
+        seen_contents = {}
     for document in reranker_list:
         if isinstance(document, list):
-            merge_reranker_list(document, result)
+            merge_reranker_list(document, result, seen_contents)
         elif isinstance(document, dict):
             content = document.get('title', '') + document.get('content', '')
+            if content in seen_contents:
+                existing_doc = seen_contents[content]
+                _merge_metadata(existing_doc.metadata, document)
+                continue
             title = document.get("title")
-            result.append(
-                Document(page_content=str(document) if len(content) == 0 else content,
-                         metadata={'title': title, **document}))
+            doc = Document(page_content=str(document) if len(content) == 0 else content,
+                           metadata={'title': title, **document})
+            seen_contents[content] = doc
+            result.append(doc)
         else:
-            result.append(Document(page_content=str(document), metadata={}))
+            content_str = str(document)
+            if content_str in seen_contents:
+                continue
+            doc = Document(page_content=content_str, metadata={})
+            seen_contents[content_str] = doc
+            result.append(doc)
     return result
 
 
