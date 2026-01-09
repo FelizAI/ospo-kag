@@ -13,11 +13,28 @@
 
 MaxKB = Max Knowledge Brain, it is an open-source platform for building enterprise-grade agents. MaxKB integrates Retrieval-Augmented Generation (RAG) pipelines, supports robust workflows, and provides advanced MCP tool-use capabilities. MaxKB is widely applied in scenarios such as intelligent customer service, corporate internal knowledge bases, academic research, and education.
 
-- **RAG Pipeline**: Supports direct uploading of documents / automatic crawling of online documents, with features for automatic text splitting, vectorization. This effectively reduces hallucinations in large models, providing a superior smart Q&A interaction experience.
+- **RAG Pipeline**: Supports direct uploading of documents / automatic crawling of online documents, with features for automatic text splitting, vectorization, and multi-way merge deduplication. This effectively reduces hallucinations in large models, providing a superior smart Q&A interaction experience.
+- **KAG Integration**: Seamlessly integrates with the KAG (KnowledgeGraph Augmented Generation) framework, leveraging knowledge graphs to enhance LLM reasoning for more accurate complex Q&A.
 - **Agentic Workflow**: Equipped with a powerful workflow engine, function library and MCP tool-use, enabling the orchestration of AI processes to meet the needs of complex business scenarios.
 - **Seamless Integration**: Facilitates zero-coding rapid integration into third-party business systems, quickly equipping existing systems with intelligent Q&A capabilities to enhance user satisfaction.
 - **Model-Agnostic**: Supports various large models, including private models (such as DeepSeek, Llama, Qwen, etc.) and public models (like OpenAI, Claude, Gemini, etc.).
 - **Multi Modal**: Native support for input and output text, image, audio and video.
+
+## Key Highlights
+
+### 🚀 Technical Implementation 
+MaxKB goes beyond basic RAG Q&A by innovatively integrating the **KAG (KnowledgeGraph Augmented Generation)** framework. With support for multi-way merge deduplication and knowledge graph enhancement, we address the limitations of traditional RAG in complex reasoning scenarios, delivering an agent building experience that exceeds expectations.
+
+### 💡 User Experience 
+The platform offers an out-of-the-box visual interface that supports zero-code integration into third-party systems. From knowledge base management and workflow orchestration to the final Q&A interface, every aspect is meticulously designed to ensure efficient information delivery and aesthetics, making complex AI technology accessible.
+
+### 🔧 Technical Innovation 
+- **Hybrid Retrieval Architecture**: Combines vector retrieval with keyword retrieval, optimized by multi-way merge algorithms to significantly improve recall and accuracy.
+- **Knowledge Graph Fusion**: Through KAG integration, structured knowledge is introduced to enhance LLM reasoning, overcoming the limitations of unstructured documents in logical reasoning.
+- **MCP Protocol Support**: Utilizes the Model Context Protocol (MCP) to standardize tool invocation, greatly expanding the capabilities of agents.
+
+### 📘  Open Source Ecosystem 
+We adhere to the spirit of open source and support rapid deployment and offline installation of Docker, making it convenient for developers to quickly get started and develop again.
 
 ## Quick start
 
