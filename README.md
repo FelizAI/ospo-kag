@@ -1,4 +1,10 @@
-<p align="center"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="Feliz AI OSPO" /></p>
+<p align="center">
+  <a href="https://www.bilibili.com/video/BV1F2r5BCEiZ" target="_blank">
+    <img src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="Watch Demo Video" />
+  </a>
+  <br />
+  👆 Click the image above to watch the demo video
+</p>
 <h1 align="center">Enterprise Open Source Governance Brain based on MaxKB and Feliz AI Knowledge Graph</h3>
 
 <p align="center">
@@ -39,12 +45,14 @@ Based on the out-of-the-box visual interface provided by MaxKB, it supports zero
 
 ## Contact Us
 
+- [MaxKB + FelizAI KAG System Entry](https://maxkb.felizai.cn/)
+
 If you have more questions, feel free to communicate with us via WeChat.
 
 - Scan the QR code below to add the Feliz AI representative.
 <image height="400px" width="300px" src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/wechat.JPG"/>
 
-## Effect Display
+## KAG vs. RAG Performance Comparison
 
 <table style="border-collapse: collapse; border: 1px solid black;">
   <tr>

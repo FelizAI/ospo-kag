@@ -1,4 +1,10 @@
-<p align="center"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="Feliz AI OSPO" /></p>
+<p align="center">
+  <a href="https://www.bilibili.com/video/BV1F2r5BCEiZ" target="_blank">
+    <img src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="点击查看演示视频" />
+  </a>
+  <br />
+  👆 点击图片查看演示视频
+</p>
 <h1 align="center">基于MaxKB与Feliz AI知识图谱的企业开源治理大脑</h3>
 
 <p align="center">
@@ -38,12 +44,14 @@
 
 ## 联系我们
 
+- [MaxKB + FelizAI KAG系统入口](https://maxkb.felizai.cn/)
+
 如你有更多问题，可以通过微信与我们交流。
 
 - 扫描下方微信添加 Feliz AI 负责人
 <image height="400px" width="300px" src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/wechat.JPG"/>
 
-## 效果展示
+## KAG 与 RAG 效果对比展示
 
 <table style="border-collapse: collapse; border: 1px solid black;">
   <tr>
