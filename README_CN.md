@@ -1,82 +1,56 @@
-<p align="center"><img src= "https://github.com/1Panel-dev/maxkb/assets/52996290/c0694996-0eed-40d8-b369-322bf2a380bf" alt="MaxKB" width="300" /></p>
-<h3 align="center">强大易用的企业级智能体平台</h3>
-<p align="center">
-    <a href="https://trendshift.io/repositories/9113" target="_blank"><img src="https://trendshift.io/api/badge/repositories/9113" alt="1Panel-dev%2FMaxKB | Trendshift" style="width: 250px; height: auto;" /></a>
-</p>
+<p align="center"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="Feliz AI OSPO" /></p>
+<h1 align="center">基于MaxKB与Feliz AI知识图谱的企业开源治理大脑</h3>
+
 <p align="center">
   <a href="README_EN.md"><img src="https://img.shields.io/badge/English_README-blue" alt="English README"></a>
   <a href="https://www.gnu.org/licenses/gpl-3.0.html#license-text"><img src="https://img.shields.io/github/license/1Panel-dev/maxkb?color=%231890FF" alt="License: GPL v3"></a>
   <a href="https://github.com/1Panel-dev/maxkb/releases/latest"><img src="https://img.shields.io/github/v/release/1Panel-dev/maxkb" alt="Latest release"></a>
-  <a href="https://github.com/1Panel-dev/maxkb"><img src="https://img.shields.io/github/stars/1Panel-dev/maxkb?style=flat-square" alt="Stars"></a>
-  <a href="https://hub.docker.com/r/1panel/maxkb"><img src="https://img.shields.io/docker/pulls/1panel/maxkb?label=downloads" alt="Download"></a>
-  <a href="https://gitee.com/fit2cloud-feizhiyun/MaxKB"><img src="https://gitee.com/fit2cloud-feizhiyun/MaxKB/badge/star.svg?theme=gvp" alt="Gitee Stars"></a>
-  <a href="https://gitcode.com/feizhiyun/MaxKB"><img src="https://gitcode.com/feizhiyun/MaxKB/star/badge.svg" alt="GitCode Stars"></a>
 </p>
 <hr/>
 
-MaxKB = Max Knowledge Brain，是一个强大易用的企业级智能体平台，致力于解决企业 AI 落地面临的技术门槛高、部署成本高、迭代周期长等问题，助力企业在人工智能时代赢得先机。秉承“开箱即用，伴随成长”的设计理念，MaxKB 支持企业快速接入主流大模型，高效构建专属知识库，并提供从基础问答（RAG）、复杂流程自动化（工作流）到智能体（Agent）的渐进式升级路径，全面赋能智能客服、智能办公助手等多种应用场景。
+[MaxKB](https://github.com/1Panel-dev/MaxKB) = Max Knowledge Brain，是一个强大易用的企业级智能体平台，致力于解决企业 AI 落地面临的技术门槛高、部署成本高、迭代周期长等问题，助力企业在人工智能时代赢得先机。秉承“开箱即用，伴随成长”的设计理念，MaxKB 支持企业快速接入主流大模型，高效构建专属知识库，并提供从基础问答（RAG）、复杂流程自动化（工作流）到智能体（Agent）的渐进式升级路径，全面赋能智能客服、智能办公助手等多种应用场景。
 
-- **RAG 检索增强生成**：高效搭建本地 AI 知识库，支持直接上传文档 / 自动爬取在线文档，支持文本自动拆分、向量化，支持多路归并去重，有效减少大模型幻觉，提升问答效果；
-- **KAG 知识增强**：无缝对接 KAG (KnowledgeGraph Augmented Generation) ，利用知识图谱增强大模型的推理能力，实现更精准的复杂问答；
-- **灵活编排**：内置强大的工作流引擎、函数库和 MCP 工具调用能力，支持编排 AI 工作过程，满足复杂业务场景下的需求；
-- **无缝嵌入**：支持零编码快速嵌入到第三方业务系统，让已有系统快速拥有智能问答能力，提高用户满意度；
-- **模型中立**：支持对接各种大模型，包括本地私有大模型（DeepSeek R1 / Qwen 3 等）、国内公共大模型（通义千问 / 腾讯混元 / 字节豆包 / 百度千帆 / 智谱 AI / Kimi 等）和国外公共大模型（OpenAI / Claude / Gemini 等）。
+[Feliz AI](https://www.felizai.cn/) 上海赋立咨企业管理有限公司（Feliz AI）是一家专注于世界前沿AI技术咨询及产品技术服务的厂商，在行业知识图谱、自然语言处理和大语言模型等AI前沿技术的落地应用上拥有丰富的实践经验。团队自主研发的Feliz AI 知识图谱自动构建及问答应用平台，支持整合企业内外部多源异构的数据，通过动态本体论的 Schema 框架，实现知识图谱的自动构建与统一融合，实现了对企业知识的有效管理与深度利用。提升大语言模型复杂推理能力的同时有效弥补模型幻觉等缺陷。
+
+- **基于动态本体论自动化建模**：采用动态本体论的 Schema 框架，支持领域内知识的自动化建模与更新，适应领域知识变化的需求，极大缩短知识建模的时间，降低了知识建模的成本和风险。
+- **大规模知识自动消歧及精炼**：算法支持超大规模（十亿级别实体）的知识消歧，自动识别和处理知识中的“一词多义”和“多词一义”，确保知识的准确性和一致性，提高知识的利用率和价值。
+- **针对复杂问题的动态推理**：解决大语言模型在复杂推理和专业知识场景下的“幻觉”与“逻辑不可控”问题，Feliz AI打造了的复杂问题拆解、意图识别、实体链接、图上证据链遍历等多种能力集成的Agentic Workflow。
 
 ## 核心亮点
 
 ### 🚀 技术实现 
-MaxKB 不仅实现了基础的 RAG 问答，更创新性地融合了 **KAG (KnowledgeGraph Augmented Generation)** 。通过支持多路归并去重和知识图谱增强，我们解决了传统 RAG 在复杂推理场景下的痛点，提供了超越预期的智能体构建体验。
+本次比赛方案不仅实现了基础的 RAG 问答，更创新性地融合了 **Feliz AI KAG (KnowledgeGraph Augmented Generation)** 。通过支持知识图谱增强的混合查询，我们解决了传统RAG在复杂推理场景下的痛点，提供了超越预期的智能体问答效果。
 
 ### 💡 交互体验 
-平台提供开箱即用的可视化界面，支持零编码快速嵌入第三方系统。无论是知识库管理、工作流编排还是最终的问答界面，都经过精心设计，确保信息传达的高效与美观，让复杂的 AI 技术变得触手可及。
+基于 MaxKB 提供开箱即用的可视化界面，支持零编码快速构建知识图谱，并嵌入 MaxKB 原先交互流程。无论是知识库管理、工作流编排还是最终的问答界面，都经过精心设计，确保信息传达的高效与美观，让复杂的 AI 技术变得触手可及。
 
 ### 🔧 技术创新 
-- **混合检索架构**：结合向量检索与关键词检索，并通过多路归并算法优化结果，显著提升召回率与准确性。
-- **知识图谱融合**：通过 KAG 集成，引入结构化知识增强大模型推理，攻克了非结构化文档在逻辑推理上的局限。
-- **MCP 协议支持**：利用 Model Context Protocol (MCP) 实现工具调用的标准化，极大扩展了智能体的能力边界。
+- **混合检索架构**：结合向量检索、关键词检索和图谱检索，通过多路归并算法优化结果，显著提升召回率与准确性。
+- **知识图谱增强**：通过集成Feliz AI KAG，引入结构化知识增强大模型逻辑推理能力，解决了 Agent 在执行复杂任务时遇到的长尾错误（Corner Cases）。
+- **异构数据融合**：支持整合多源异构数据，包括结构化数据（本次采用 OpenDigger 的结构化数据）、非结构化数据（本次采用 Gitlab Handbook 手册数据），实现数据的统一融合和利用。
 
-### 📘 开源生态 
-我们秉持开源精神，支持 Docker 快速部署和离线安装，方便开发者快速上手和二次开发。
+### 🌐 应用场景 
 
-MaxKB 三分钟视频介绍：https://www.bilibili.com/video/BV18JypYeEkj/
+- **企业知识管理**：帮助企业整合和管理内部和外部的知识资源，提升决策效率和质量。
+- **智能客服**：为客户提供24/7的智能客服支持，解决客户问题和需求，提升客户满意度。
+- **智能办公助手**：为企业员工提供智能办公助手，帮助员工完成日常任务，提升工作效率。
 
-## 快速开始
 
-```
-# Linux 机器
-docker run -d --name=maxkb --restart=always -p 8080:8080 -v ~/.maxkb:/opt/maxkb registry.fit2cloud.com/maxkb/maxkb
+## 联系我们
 
-# Windows 机器
-docker run -d --name=maxkb --restart=always -p 8080:8080 -v C:/maxkb:/opt/maxkb registry.fit2cloud.com/maxkb/maxkb
+如你有更多问题，可以通过微信与我们交流。
 
-# 用户名: admin
-# 密码: MaxKB@123..
-```
+- 扫描下方微信添加 Feliz AI 负责人
+<image height="400px" width="300px" src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/wechat.JPG"/>
 
-- 你也可以通过 [1Panel 应用商店](https://apps.fit2cloud.com/1panel) 快速部署 MaxKB；
-- 如果是内网环境，推荐使用 [离线安装包](https://community.fit2cloud.com/#/products/maxkb/downloads) 进行安装部署；
-- MaxKB 不同产品产品版本的对比请参见：[MaxKB 产品版本对比](https://maxkb.cn/price)；
-- 如果您需要向团队介绍 MaxKB，可以使用这个 [官方 PPT 材料](https://fit2cloud.com/maxkb/download/introduce-maxkb_202507.pdf)。
-
-如你有更多问题，可以查看使用手册，或者通过论坛与我们交流。
-
-- [案例展示](USE-CASES.md)
-- [使用手册](https://maxkb.cn/docs/)
-- [论坛求助](https://bbs.fit2cloud.com/c/mk/11)
-- 技术交流群
-
-<image height="150px" width="150px" src="https://github.com/1Panel-dev/MaxKB/assets/52996290/a083d214-02be-4178-a1db-4f428124153a"/>
-
-## UI 展示
+## 效果展示
 
 <table style="border-collapse: collapse; border: 1px solid black;">
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/eb285512-a66a-4752-8941-c65ed1592238" alt="MaxKB Demo1"   /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/f732f1f5-472c-4fd2-93c1-a277eda83d04" alt="MaxKB Demo2"   /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/complex_query.png" alt="Complex Reasoning Query"   /></td>
   </tr>
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/c927474a-9a23-4830-822f-5db26025c9b2" alt="MaxKB Demo3"   /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/e6268996-a46d-4e58-9f30-31139df78ad2" alt="MaxKB Demo4"   /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/construct_query.png" alt="Structured Data Query"   /></td>
   </tr>
 </table>
 
@@ -86,18 +60,10 @@ docker run -d --name=maxkb --restart=always -p 8080:8080 -v C:/maxkb:/opt/maxkb 
 - 后端：[Python / Django](https://www.djangoproject.com/)
 - LangChain：[LangChain](https://www.langchain.com/)
 - 向量数据库：[PostgreSQL / pgvector](https://www.postgresql.org/)
+- 图数据库：[Neo4j](https://neo4j.com/)
 
-## 飞致云的其他明星项目
-
-- [1Panel](https://github.com/1panel-dev/1panel/) - 现代化、开源的 Linux 服务器运维管理面板
-- [JumpServer](https://github.com/jumpserver/jumpserver/) - 广受欢迎的开源堡垒机
-- [DataEase](https://github.com/dataease/dataease/) - 人人可用的开源数据可视化分析工具
-- [MeterSphere](https://github.com/metersphere/metersphere/) - 新一代的开源持续测试工具
-- [Halo](https://github.com/halo-dev/halo/) - 强大易用的开源建站工具
 
 ## License
-
-Copyright (c) 2014-2025 飞致云 FIT2CLOUD, All rights reserved.
 
 Licensed under The GNU General Public License version 3 (GPLv3)  (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 

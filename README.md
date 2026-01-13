@@ -1,79 +1,68 @@
-<p align="center"><img src= "https://github.com/1Panel-dev/maxkb/assets/52996290/c0694996-0eed-40d8-b369-322bf2a380bf" alt="MaxKB" width="300" /></p>
-<h3 align="center">Open-source platform for building enterprise-grade agents</h3>
-<h3 align="center">强大易用的企业级智能体平台</h3>
-<p align="center"><a href="https://trendshift.io/repositories/9113" target="_blank"><img src="https://trendshift.io/api/badge/repositories/9113" alt="1Panel-dev%2FMaxKB | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a></p>
+<p align="center"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/ospo-felizai.png" alt="Feliz AI OSPO" /></p>
+<h1 align="center">Enterprise Open Source Governance Brain based on MaxKB and Feliz AI Knowledge Graph</h3>
+
 <p align="center">
+  <a href="README_CN.md"><img src="https://img.shields.io/badge/简体中文_README-blue" alt="Simplified Chinese README"></a>
   <a href="https://www.gnu.org/licenses/gpl-3.0.html#license-text"><img src="https://img.shields.io/github/license/1Panel-dev/maxkb?color=%231890FF" alt="License: GPL v3"></a>
   <a href="https://github.com/1Panel-dev/maxkb/releases/latest"><img src="https://img.shields.io/github/v/release/1Panel-dev/maxkb" alt="Latest release"></a>
-  <a href="https://github.com/1Panel-dev/maxkb"><img src="https://img.shields.io/github/stars/1Panel-dev/maxkb?color=%231890FF&style=flat-square" alt="Stars"></a>    
-  <a href="https://hub.docker.com/r/1panel/maxkb"><img src="https://img.shields.io/docker/pulls/1panel/maxkb?label=downloads" alt="Download"></a><br/>
- [<a href="/README_CN.md">中文(简体)</a>] | [<a href="/README.md">English</a>] 
 </p>
+<p align="center"> [<a href="/README_CN.md">中文(简体)</a>] | [<a href="/README.md">English</a>] </p>
 <hr/>
 
-MaxKB = Max Knowledge Brain, it is an open-source platform for building enterprise-grade agents. MaxKB integrates Retrieval-Augmented Generation (RAG) pipelines, supports robust workflows, and provides advanced MCP tool-use capabilities. MaxKB is widely applied in scenarios such as intelligent customer service, corporate internal knowledge bases, academic research, and education.
+[MaxKB](https://github.com/1Panel-dev/MaxKB) = Max Knowledge Brain, is a powerful and easy-to-use enterprise-grade agent platform. It is dedicated to solving problems such as high technical barriers, high deployment costs, and long iteration cycles in enterprise AI adoption, helping enterprises gain a head start in the AI era. Adhering to the "out-of-the-box, growing with you" design philosophy, MaxKB supports rapid integration of mainstream large models, efficient construction of exclusive knowledge bases, and provides a progressive upgrade path from basic Q&A (RAG) and complex process automation (Workflow) to Agents, fully empowering scenarios like intelligent customer service and intelligent office assistants.
 
-- **RAG Pipeline**: Supports direct uploading of documents / automatic crawling of online documents, with features for automatic text splitting, vectorization, and multi-way merge deduplication. This effectively reduces hallucinations in large models, providing a superior smart Q&A interaction experience.
-- **KAG Integration**: Seamlessly integrates with the KAG (KnowledgeGraph Augmented Generation) framework, leveraging knowledge graphs to enhance LLM reasoning for more accurate complex Q&A.
-- **Agentic Workflow**: Equipped with a powerful workflow engine, function library and MCP tool-use, enabling the orchestration of AI processes to meet the needs of complex business scenarios.
-- **Seamless Integration**: Facilitates zero-coding rapid integration into third-party business systems, quickly equipping existing systems with intelligent Q&A capabilities to enhance user satisfaction.
-- **Model-Agnostic**: Supports various large models, including private models (such as DeepSeek, Llama, Qwen, etc.) and public models (like OpenAI, Claude, Gemini, etc.).
-- **Multi Modal**: Native support for input and output text, image, audio and video.
+[Feliz AI](https://www.felizai.cn/) (Shanghai Feliz Enterprise Management Co., Ltd.) is a vendor focusing on frontier AI technology consulting and product technical services, with rich practical experience in the application of industry knowledge graphs, natural language processing (NLP), and large language models (LLMs). The team's self-developed Feliz AI Knowledge Graph Automated Construction and Q&A Application Platform supports the integration of internal and external multi-source heterogeneous data. Through a dynamic ontology Schema framework, it achieves automated construction and unified fusion of knowledge graphs, enabling effective management and deep utilization of enterprise knowledge. It enhances the complex reasoning capabilities of large language models while effectively mitigating defects like model hallucinations.
+
+- **Automated Modeling based on Dynamic Ontology**: Adopts a dynamic ontology Schema framework to support automated modeling and updating of domain knowledge, adapting to changing domain knowledge requirements, significantly shortening modeling time, and reducing modeling costs and risks.
+- **Large-scale Knowledge Disambiguation and Refinement**: Algorithms support ultra-large-scale (billion-level entity) knowledge disambiguation, automatically identifying and handling "polysemy" and "synonymy" in knowledge, ensuring accuracy and consistency, and improving knowledge utilization and value.
+- **Dynamic Reasoning for Complex Problems**: Addressing "hallucinations" and "uncontrollable logic" in large language models during complex reasoning and professional knowledge scenarios, Feliz AI has created an Agentic Workflow integrating capabilities such as complex problem decomposition, intent recognition, entity linking, and graph evidence chain traversal.
 
 ## Key Highlights
 
-### 🚀 Technical Implementation 
-MaxKB goes beyond basic RAG Q&A by innovatively integrating the **KAG (KnowledgeGraph Augmented Generation)** framework. With support for multi-way merge deduplication and knowledge graph enhancement, we address the limitations of traditional RAG in complex reasoning scenarios, delivering an agent building experience that exceeds expectations.
+### 🚀 Technical Implementation
+This competition solution not only implements basic RAG Q&A but also innovatively integrates **Feliz AI KAG (KnowledgeGraph Augmented Generation)**. By supporting knowledge graph-enhanced hybrid queries, we address the pain points of traditional RAG in complex reasoning scenarios, delivering agent Q&A results that exceed expectations.
 
-### 💡 User Experience 
-The platform offers an out-of-the-box visual interface that supports zero-code integration into third-party systems. From knowledge base management and workflow orchestration to the final Q&A interface, every aspect is meticulously designed to ensure efficient information delivery and aesthetics, making complex AI technology accessible.
+### 💡 User Experience
+Based on the out-of-the-box visual interface provided by MaxKB, it supports zero-code rapid construction of knowledge graphs embedded into the original MaxKB interaction flow. From knowledge base management and workflow orchestration to the final Q&A interface, every aspect is meticulously designed to ensure efficient information delivery and aesthetics, making complex AI technology accessible.
 
-### 🔧 Technical Innovation 
-- **Hybrid Retrieval Architecture**: Combines vector retrieval with keyword retrieval, optimized by multi-way merge algorithms to significantly improve recall and accuracy.
-- **Knowledge Graph Fusion**: Through KAG integration, structured knowledge is introduced to enhance LLM reasoning, overcoming the limitations of unstructured documents in logical reasoning.
-- **MCP Protocol Support**: Utilizes the Model Context Protocol (MCP) to standardize tool invocation, greatly expanding the capabilities of agents.
+### 🔧 Technical Innovation
+- **Hybrid Retrieval Architecture**: Combines vector retrieval, keyword retrieval, and graph retrieval, optimizing results through multi-way merge algorithms to significantly improve recall and accuracy.
+- **Knowledge Graph Enhancement**: By integrating Feliz AI KAG, structured knowledge is introduced to enhance LLM logical reasoning capabilities, solving corner cases encountered by agents when performing complex tasks.
+- **Heterogeneous Data Fusion**: Supports the integration of multi-source heterogeneous data, including structured data (using OpenDigger structured data for this project) and unstructured data (using Gitlab Handbook data), achieving unified data fusion and utilization.
 
-### 📘  Open Source Ecosystem 
-We adhere to the spirit of open source and support rapid deployment and offline installation of Docker, making it convenient for developers to quickly get started and develop again.
+### 🌐 Application Scenarios
 
-## Quick start
+- **Enterprise Knowledge Management**: Helps enterprises integrate and manage internal and external knowledge resources, improving decision-making efficiency and quality.
+- **Intelligent Customer Service**: Provides 24/7 intelligent customer service support to resolve customer issues and needs, enhancing customer satisfaction.
+- **Intelligent Office Assistant**: Provides intelligent office assistants for enterprise employees, helping them complete daily tasks and improve work efficiency.
 
-Execute the script below to start a MaxKB container using Docker:
 
-```bash
-docker run -d --name=maxkb --restart=always -p 8080:8080 -v ~/.maxkb:/opt/maxkb 1panel/maxkb
-```
+## Contact Us
 
-Access MaxKB web interface at `http://your_server_ip:8080` with default admin credentials:
+If you have more questions, feel free to communicate with us via WeChat.
 
-- username: admin
-- password: MaxKB@123..
+- Scan the QR code below to add the Feliz AI representative.
+<image height="400px" width="300px" src="https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/wechat.JPG"/>
 
-中国用户如遇到 Docker 镜像 Pull 失败问题，请参照该 [离线安装文档](https://maxkb.cn/docs/v2/installation/offline_installtion/) 进行安装。
-
-## Screenshots
+## Effect Display
 
 <table style="border-collapse: collapse; border: 1px solid black;">
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/eb285512-a66a-4752-8941-c65ed1592238" alt="MaxKB Demo1"   /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/f732f1f5-472c-4fd2-93c1-a277eda83d04" alt="MaxKB Demo2"   /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/complex_query.png" alt="Complex Reasoning Query"   /></td>
   </tr>
   <tr>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/c927474a-9a23-4830-822f-5db26025c9b2" alt="MaxKB Demo3"   /></td>
-    <td style="padding: 5px;background-color:#fff;"><img src= "https://github.com/user-attachments/assets/e6268996-a46d-4e58-9f30-31139df78ad2" alt="MaxKB Demo4"   /></td>
+    <td style="padding: 5px;background-color:#fff;"><img src= "https://feliz-0428.oss-cn-shanghai.aliyuncs.com/feliz/construct_query.png" alt="Structured Data Query"   /></td>
   </tr>
 </table>
 
-## Technical stack
+## Technical Stack
 
-- Frontend：[Vue.js](https://vuejs.org/)
-- Backend：[Python / Django](https://www.djangoproject.com/)
-- LLM Framework：[LangChain](https://www.langchain.com/)
-- Database：[PostgreSQL + pgvector](https://www.postgresql.org/)
+- Frontend: [Vue.js](https://vuejs.org/)
+- Backend: [Python / Django](https://www.djangoproject.com/)
+- LangChain: [LangChain](https://www.langchain.com/)
+- Vector Database: [PostgreSQL / pgvector](https://www.postgresql.org/)
+- Graph Database: [Neo4j](https://neo4j.com/)
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=1Panel-dev/MaxKB&type=Date)](https://star-history.com/#1Panel-dev/MaxKB&Date)
 
 ## License
 
