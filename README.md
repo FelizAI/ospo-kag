@@ -45,7 +45,7 @@ Based on the out-of-the-box visual interface provided by MaxKB, it supports zero
 
 ## Contact Us
 
-- [MaxKB + FelizAI KAG System Entry]([https://maxkb.felizai.cn/](https://maxkb.felizai.cn/chat/f87dc5d69cc9bf8e))
+- [MaxKB + FelizAI KAG System Entry](https://maxkb.felizai.cn/chat/f87dc5d69cc9bf8e)
 
 If you have more questions, feel free to communicate with us via WeChat.
 
