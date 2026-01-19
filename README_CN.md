@@ -44,7 +44,7 @@
 
 ## 联系我们
 
-- [MaxKB + FelizAI KAG系统入口](https://maxkb.felizai.cn/)
+- [MaxKB + FelizAI KAG系统入口](https://maxkb.felizai.cn/chat/f87dc5d69cc9bf8e)
 
 如你有更多问题，可以通过微信与我们交流。
 
