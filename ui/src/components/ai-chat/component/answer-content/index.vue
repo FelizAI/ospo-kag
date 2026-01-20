@@ -104,8 +104,11 @@
       :before-close="beforeClosePathGraph"
     >
       <template #header>
-        <div class="flex align-center">
+        <div class="flex align-center flex-between w-full">
           <span class="path-graph-title ellipsis-1">路径图</span>
+          <el-button class="path-graph-button" size="small" type="primary" link @click="toggleForceLayout">
+            {{ forceLayoutEnabled ? '固定布局' : '自动布局' }}
+          </el-button>
         </div>
       </template>
       <div class="path-graph-container">
@@ -197,6 +200,9 @@ interface GraphNodeData {
   value: number
   symbolSize: number
   category: number
+  x?: number
+  y?: number
+  fixed?: boolean
   itemStyle: {
     color: string
     shadowBlur: number
@@ -476,8 +482,17 @@ function buildGraphData(concepts: string[], paths: string[]): { nodes: GraphNode
   return { nodes, links }
 }
 
-function buildGraphOption(concepts: string[], paths: string[]): echarts.EChartsOption {
+const forceLayoutEnabled = ref(true)
+const lockedGraphNodes = ref<GraphNodeData[] | null>(null)
+
+function buildGraphOption(
+  concepts: string[],
+  paths: string[],
+  isForceLayoutEnabled: boolean,
+  fixedNodes?: GraphNodeData[],
+): echarts.EChartsOption {
   const { nodes, links } = buildGraphData(concepts, paths)
+  const graphNodes = fixedNodes && fixedNodes.length > 0 ? fixedNodes : nodes
 
   return {
     backgroundColor: {
@@ -526,8 +541,8 @@ function buildGraphOption(concepts: string[], paths: string[]): echarts.EChartsO
     series: [
       {
         type: 'graph',
-        layout: 'force',
-        data: nodes,
+        layout: isForceLayoutEnabled ? 'force' : 'none',
+        data: graphNodes,
         links,
         roam: true,
         draggable: true,
@@ -544,12 +559,19 @@ function buildGraphOption(concepts: string[], paths: string[]): echarts.EChartsO
         lineStyle: {
           curveness: 0.1,
         },
-        force: {
-          repulsion: 1000,
-          edgeLength: [120, 350],
-          gravity: 0.08,
-          layoutAnimation: true,
-        },
+        force: isForceLayoutEnabled
+          ? {
+              repulsion: 1000,
+              edgeLength: [120, 350],
+              gravity: 0.08,
+              layoutAnimation: true,
+            }
+          : {
+              repulsion: 0,
+              edgeLength: [0, 0],
+              gravity: 0,
+              layoutAnimation: false,
+            },
         emphasis: {
           scale: true,
           focus: 'adjacency',
@@ -580,13 +602,129 @@ function renderPathGraph() {
     chart = echarts.init(pathGraphRef.value)
   }
   activeChart.value = chart
-  chart.setOption(buildGraphOption(concepts, paths), true)
+  const optionNodes = forceLayoutEnabled.value ? undefined : lockedGraphNodes.value ?? undefined
+  chart.setOption(buildGraphOption(concepts, paths, forceLayoutEnabled.value, optionNodes), true)
 }
 
 function resizePathGraph() {
   if (activeChart.value) {
     activeChart.value.resize()
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function hasGetModel(value: unknown): value is { getModel: () => unknown } {
+  return isRecord(value) && typeof value.getModel === 'function'
+}
+
+function hasGetSeriesByIndex(value: unknown): value is { getSeriesByIndex: (index: number) => unknown } {
+  return isRecord(value) && typeof value.getSeriesByIndex === 'function'
+}
+
+function hasGetData(value: unknown): value is { getData: () => unknown } {
+  return isRecord(value) && typeof value.getData === 'function'
+}
+
+function hasSeriesDataMethods(
+  value: unknown,
+): value is { count: () => number; getItemLayout: (index: number) => unknown } {
+  return (
+    isRecord(value) &&
+    typeof value.count === 'function' &&
+    typeof value.getItemLayout === 'function'
+  )
+}
+
+function getGraphNodesWithLayout(): GraphNodeData[] {
+  if (!activeChart.value) {
+    return []
+  }
+  const option = activeChart.value.getOption()
+  const seriesOption = Array.isArray(option.series) ? option.series[0] : option.series
+  if (!seriesOption || !('data' in seriesOption) || !Array.isArray((seriesOption as any).data)) {
+    return []
+  }
+
+  const baseData = (seriesOption as any).data as unknown[]
+  const nodes: GraphNodeData[] = []
+
+  const chartUnknown: unknown = activeChart.value
+  const modelUnknown: unknown = hasGetModel(chartUnknown) ? chartUnknown.getModel() : null
+  const seriesUnknown: unknown = hasGetSeriesByIndex(modelUnknown)
+    ? modelUnknown.getSeriesByIndex(0)
+    : null
+  const seriesDataUnknown: unknown = hasGetData(seriesUnknown) ? seriesUnknown.getData() : null
+  const seriesData = hasSeriesDataMethods(seriesDataUnknown) ? seriesDataUnknown : null
+
+  const itemCount =
+    seriesData ? Math.min(seriesData.count(), baseData.length) : 0
+
+  for (let i = 0; i < itemCount; i += 1) {
+    const raw = baseData[i]
+    if (!isRecord(raw)) {
+      continue
+    }
+    const layout = seriesData ? seriesData.getItemLayout(i) : null
+
+    let x: number | undefined
+    let y: number | undefined
+    if (Array.isArray(layout) && layout.length >= 2) {
+      const lx = layout[0]
+      const ly = layout[1]
+      if (typeof lx === 'number' && Number.isFinite(lx) && typeof ly === 'number' && Number.isFinite(ly)) {
+        x = lx
+        y = ly
+      }
+    } else if (isRecord(layout)) {
+      const lx = layout.x
+      const ly = layout.y
+      if (typeof lx === 'number' && Number.isFinite(lx) && typeof ly === 'number' && Number.isFinite(ly)) {
+        x = lx
+        y = ly
+      }
+    }
+
+    const node = { ...(raw as unknown as GraphNodeData) }
+    if (x !== undefined && y !== undefined) {
+      node.x = x
+      node.y = y
+    }
+    nodes.push(node)
+  }
+
+  return nodes
+}
+
+function toggleForceLayout() {
+  if (!activeChart.value) {
+    forceLayoutEnabled.value = !forceLayoutEnabled.value
+    return
+  }
+  const nextState = !forceLayoutEnabled.value
+
+  const currentNodes = getGraphNodesWithLayout()
+  if (nextState) {
+    lockedGraphNodes.value = null
+  } else {
+    lockedGraphNodes.value = currentNodes.map((node) => ({ ...node, fixed: true }))
+  }
+
+  forceLayoutEnabled.value = nextState
+
+  const optionNodes = nextState
+    ? currentNodes.map((node) => {
+        const { fixed, ...rest } = node
+        return rest
+      })
+    : lockedGraphNodes.value ?? undefined
+
+  activeChart.value.setOption(
+    buildGraphOption(conceptList.value, pathList.value, nextState, optionNodes),
+    true,
+  )
 }
 
 const openPathGraph = async () => {
@@ -596,6 +734,10 @@ const openPathGraph = async () => {
 }
 
 const beforeClosePathGraph = (done: () => void) => {
+  if (!forceLayoutEnabled.value) {
+    const currentNodes = getGraphNodesWithLayout()
+    lockedGraphNodes.value = currentNodes.map((node) => ({ ...node, fixed: true }))
+  }
   disposePathGraph()
   done()
 }
