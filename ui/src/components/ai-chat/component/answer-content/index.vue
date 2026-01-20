@@ -13,6 +13,28 @@
         }"
       >
         <el-card shadow="always" class="mb-8 border-r-8" style="--el-card-padding: 6px 16px">
+          <div v-if="showPathToolResult(index)" class="mb-8 color-secondary">
+            <div class="flex-between align-center gap-8">
+              <div class="flex-1">
+                <div v-if="pathToolResultConceptSummary" class="ellipsis-1">
+                  {{ pathToolResultConceptSummary }}
+                </div>
+                <div v-if="pathToolResultPathSummary" class="ellipsis-2">
+                  {{ pathToolResultPathSummary }}
+                </div>
+              </div>
+              <el-button
+                v-if="hasPathGraphData"
+                class="path-graph-button"
+                size="small"
+                type="primary"
+                link
+                @click.stop="openPathGraph"
+              >
+                查看路径图
+              </el-button>
+            </div>
+          </div>
           <MdRenderer
             v-if="
               (chatRecord.write_ed === undefined || chatRecord.write_ed === true) &&
@@ -72,15 +94,34 @@
         :regenerationChart="regenerationChart"
       ></OperationButton>
     </div>
+    <el-dialog
+      v-model="pathGraphVisible"
+      width="86%"
+      top="6vh"
+      append-to-body
+      align-center
+      destroy-on-close
+      :before-close="beforeClosePathGraph"
+    >
+      <template #header>
+        <div class="flex align-center">
+          <span class="path-graph-title ellipsis-1">路径图</span>
+        </div>
+      </template>
+      <div class="path-graph-container">
+        <div ref="pathGraphRef" class="path-graph-canvas" v-resize="resizePathGraph"></div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import KnowledgeSourceComponent from '@/components/ai-chat/component/knowledge-source-component/index.vue'
 import MdRenderer from '@/components/markdown/MdRenderer.vue'
 import OperationButton from '@/components/ai-chat/component/operation-button/index.vue'
-import { type chatType } from '@/api/type/application'
+import { type chatType, type PathToolResultData } from '@/api/type/application'
 import bus from '@/bus'
+import * as echarts from 'echarts'
 
 const props = defineProps<{
   chatRecord: chatType
@@ -146,6 +187,429 @@ const answer_text_list = computed(() => {
   })
 })
 
+type ArrowToken = '->' | '<-'
+type ConceptMap = Map<string, string>
+
+interface GraphNodeData {
+  id: string
+  name: string
+  description: string
+  value: number
+  symbolSize: number
+  category: number
+  itemStyle: {
+    color: string
+    shadowBlur: number
+    shadowColor: string
+  }
+  label: {
+    show: boolean
+    color: string
+    fontSize: number
+  }
+}
+
+interface GraphLinkData {
+  source: string
+  target: string
+  labelText: string
+  lineStyle: {
+    color: string
+    width: number
+    opacity: number
+  }
+  label: {
+    show: boolean
+    formatter: string
+    color: string
+    fontSize: number
+    backgroundColor: string
+    borderRadius: number
+    padding: number[]
+  }
+}
+
+const pathToolResultData = computed<PathToolResultData | null>(() => {
+  const result = props.chatRecord.path_tool_result
+  if (!result) {
+    return null
+  }
+  if ('data' in result) {
+    return result.data ?? null
+  }
+  if ('concept' in result && 'path' in result) {
+    return result
+  }
+  return null
+})
+
+const conceptList = computed<string[]>(() => {
+  const list = pathToolResultData.value?.concept
+  return Array.isArray(list) ? list.filter((v) => typeof v === 'string' && v.length > 0) : []
+})
+
+const pathList = computed<string[]>(() => {
+  const list = pathToolResultData.value?.path
+  return Array.isArray(list) ? list.filter((v) => typeof v === 'string' && v.length > 0) : []
+})
+
+const hasPathGraphData = computed(() => {
+  return conceptList.value.length > 0 || pathList.value.length > 0
+})
+
+const pathToolResultConceptSummary = computed(() => {
+  const first = conceptList.value[0]
+  return typeof first === 'string' && first.length > 0 ? first : ''
+})
+
+const pathToolResultPathSummary = computed(() => {
+  const list = pathList.value
+  if (list.length === 0) {
+    return ''
+  }
+  const preview = list.slice(0, 2).join(' / ')
+  return list.length > 2 ? `${preview} / ...` : preview
+})
+
+const showPathToolResult = (index: number) => {
+  return (
+    index === answer_text_list.value.length - 1 &&
+    (pathToolResultConceptSummary.value.length > 0 || pathToolResultPathSummary.value.length > 0)
+  )
+}
+
+const pathGraphVisible = ref(false)
+const pathGraphRef = ref<HTMLElement>()
+const activeChart = ref<echarts.EChartsType | null>(null)
+
+function parseConceptItem(raw: string): { name: string; description: string } {
+  const index = raw.indexOf(':')
+  if (index === -1) {
+    return { name: raw.trim(), description: '' }
+  }
+  const name = raw.slice(0, index).trim()
+  const description = raw.slice(index + 1).trim()
+  return { name, description }
+}
+
+function buildConceptMap(concepts: string[]): ConceptMap {
+  const map: ConceptMap = new Map()
+  for (const c of concepts) {
+    const { name, description } = parseConceptItem(c)
+    if (name.length > 0 && !map.has(name)) {
+      map.set(name, description)
+    }
+  }
+  return map
+}
+
+function splitByArrows(raw: string): string[] {
+  return raw
+    .split(/(->|<-)/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+}
+
+function isArrowToken(v: string): v is ArrowToken {
+  return v === '->' || v === '<-'
+}
+
+function buildLinksFromPaths(paths: string[]): Array<{ source: string; target: string; labelText: string }> {
+  const links: Array<{ source: string; target: string; labelText: string }> = []
+  const seen = new Set<string>()
+
+  for (const p of paths) {
+    const parts = splitByArrows(p)
+    if (parts.length < 5) {
+      continue
+    }
+    let i = 0
+    while (i + 4 < parts.length) {
+      const leftNode = parts[i]
+      const arrow1 = parts[i + 1]
+      const labelText = parts[i + 2]
+      const arrow2 = parts[i + 3]
+      const rightNode = parts[i + 4]
+
+      if (!leftNode || !rightNode || !isArrowToken(arrow1) || !isArrowToken(arrow2) || !labelText) {
+        i += 1
+        continue
+      }
+
+      let source = leftNode
+      let target = rightNode
+
+      if (arrow1 === '<-' && arrow2 === '<-') {
+        source = rightNode
+        target = leftNode
+      } else if (arrow1 === '<-' && arrow2 === '->') {
+        source = rightNode
+        target = leftNode
+      } else if (arrow1 === '->' && arrow2 === '<-') {
+        source = leftNode
+        target = rightNode
+      }
+
+      const key = `${source}||${labelText}||${target}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        links.push({ source, target, labelText })
+      }
+
+      i += 4
+    }
+  }
+
+  return links
+}
+
+function collectNodes(conceptMap: ConceptMap, links: Array<{ source: string; target: string }>): string[] {
+  const names = new Set<string>()
+  for (const name of conceptMap.keys()) {
+    if (name.length > 0) {
+      names.add(name)
+    }
+  }
+  for (const link of links) {
+    if (link.source) {
+      names.add(link.source)
+    }
+    if (link.target) {
+      names.add(link.target)
+    }
+  }
+  return Array.from(names)
+}
+
+function hashToHue(input: string): number {
+  let hash = 0
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash << 5) - hash + input.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) % 360
+}
+
+function colorForNode(name: string, isolated: boolean): string {
+  if (isolated) {
+    return 'rgba(200, 210, 220, 0.95)'
+  }
+  const hue = hashToHue(name)
+  // 浅色背景下，节点颜色稍微调深一点点以增加对比度，饱和度保持较高
+  return `hsla(${hue}, 75%, 58%, 0.98)`
+}
+
+function buildGraphData(concepts: string[], paths: string[]): { nodes: GraphNodeData[]; links: GraphLinkData[] } {
+  const conceptMap = buildConceptMap(concepts)
+  const rawLinks = buildLinksFromPaths(paths)
+  const nodeNames = collectNodes(conceptMap, rawLinks)
+
+  const degree = new Map<string, number>()
+  for (const n of nodeNames) {
+    degree.set(n, 0)
+  }
+  for (const l of rawLinks) {
+    degree.set(l.source, (degree.get(l.source) ?? 0) + 1)
+    degree.set(l.target, (degree.get(l.target) ?? 0) + 1)
+  }
+
+  const nodes: GraphNodeData[] = nodeNames.map((name) => {
+    const value = degree.get(name) ?? 0
+    const isolated = value === 0
+    const color = colorForNode(name, isolated)
+    const size = Math.min(60, Math.max(24, 24 + value * 4))
+    const description = conceptMap.get(name) ?? ''
+
+    return {
+      id: name,
+      name,
+      description,
+      value,
+      symbolSize: size,
+      category: isolated ? 0 : 1,
+      itemStyle: {
+        color,
+        shadowBlur: isolated ? 5 : 15,
+        shadowColor: isolated ? 'rgba(0, 0, 0, 0.1)' : color,
+        borderColor: '#fff',
+        borderWidth: 2,
+      },
+      label: {
+        show: true,
+        color: '#334155',
+        fontSize: isolated ? 11 : 13,
+        fontWeight: isolated ? 400 : 600,
+        textBorderColor: '#fff',
+        textBorderWidth: 2,
+      },
+    }
+  })
+
+  const links: GraphLinkData[] = rawLinks.map((l) => {
+    const labelText = l.labelText.trim()
+    return {
+      source: l.source,
+      target: l.target,
+      labelText,
+      lineStyle: {
+        color: '#cbd5e1',
+        width: 1.5,
+        opacity: 0.8,
+        curveness: 0.1,
+      },
+      label: {
+        show: labelText.length > 0,
+        formatter: labelText,
+        color: '#475569',
+        fontSize: 11,
+        backgroundColor: '#f1f5f9',
+        borderColor: '#e2e8f0',
+        borderWidth: 1,
+        borderRadius: 4,
+        padding: [4, 8],
+        shadowBlur: 2,
+        shadowColor: 'rgba(0,0,0,0.05)',
+      },
+    }
+  })
+
+  return { nodes, links }
+}
+
+function buildGraphOption(concepts: string[], paths: string[]): echarts.EChartsOption {
+  const { nodes, links } = buildGraphData(concepts, paths)
+
+  return {
+    backgroundColor: {
+      type: 'radial',
+      x: 0.5,
+      y: 0.5,
+      r: 0.8,
+      colorStops: [
+        { offset: 0, color: '#f8fafc' },
+        { offset: 1, color: '#f1f5f9' },
+      ],
+    },
+    tooltip: {
+      confine: true,
+      borderWidth: 1,
+      borderColor: '#e2e8f0',
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
+      textStyle: { color: '#334155', fontSize: 13 },
+      extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 6px;',
+      formatter: (params) => {
+        const p = Array.isArray(params) ? params[0] : params
+        const name = typeof p?.name === 'string' ? p.name : ''
+        const dataType = typeof p?.dataType === 'string' ? p.dataType : ''
+        const data = (p && typeof p === 'object' && 'data' in p ? (p as any).data : {}) as Record<
+          string,
+          unknown
+        >
+
+        if (dataType === 'node') {
+          const description = typeof data.description === 'string' ? data.description : ''
+          return description.length > 0
+            ? `<div style="font-weight:600; color: #1e293b; margin-bottom: 4px;">${name}</div><div style="color: #64748b; line-height: 1.4;">${description}</div>`
+            : name
+        }
+        if (dataType === 'edge') {
+          const labelText = typeof data.labelText === 'string' ? data.labelText : ''
+          const source = typeof data.source === 'string' ? data.source : ''
+          const target = typeof data.target === 'string' ? data.target : ''
+          return `<div style="font-weight:600; color: #1e293b; margin-bottom: 4px;">${source} → ${target}</div><div style="color: #64748b;">${labelText}</div>`
+        }
+        return name
+      },
+    },
+    animationDuration: 1000,
+    animationEasingUpdate: 'quinticInOut',
+    series: [
+      {
+        type: 'graph',
+        layout: 'force',
+        data: nodes,
+        links,
+        roam: true,
+        draggable: true,
+        focusNodeAdjacency: true,
+        edgeSymbol: ['none', 'arrow'],
+        edgeSymbolSize: [4, 12],
+        label: {
+          position: 'right',
+          formatter: '{b}',
+        },
+        edgeLabel: {
+          show: true,
+        },
+        lineStyle: {
+          curveness: 0.1,
+        },
+        force: {
+          repulsion: 1000,
+          edgeLength: [120, 350],
+          gravity: 0.08,
+          layoutAnimation: true,
+        },
+        emphasis: {
+          scale: true,
+          focus: 'adjacency',
+          label: { show: true },
+          lineStyle: { width: 3, opacity: 1 },
+        },
+      },
+    ],
+  }
+}
+
+function disposePathGraph() {
+  if (activeChart.value) {
+    activeChart.value.dispose()
+    activeChart.value = null
+  }
+}
+
+function renderPathGraph() {
+  if (!pathGraphRef.value) {
+    return
+  }
+  const concepts = conceptList.value
+  const paths = pathList.value
+
+  let chart = echarts.getInstanceByDom(pathGraphRef.value)
+  if (!chart) {
+    chart = echarts.init(pathGraphRef.value)
+  }
+  activeChart.value = chart
+  chart.setOption(buildGraphOption(concepts, paths), true)
+}
+
+function resizePathGraph() {
+  if (activeChart.value) {
+    activeChart.value.resize()
+  }
+}
+
+const openPathGraph = async () => {
+  pathGraphVisible.value = true
+  await nextTick()
+  renderPathGraph()
+}
+
+const beforeClosePathGraph = (done: () => void) => {
+  disposePathGraph()
+  done()
+}
+
+watch(
+  () => pathGraphVisible.value,
+  async (visible) => {
+    if (visible) {
+      await nextTick()
+      renderPathGraph()
+    }
+  },
+)
+
 function showSource(row: any) {
   if (props.type === 'log') {
     return true
@@ -181,5 +645,30 @@ onMounted(() => {
     stopChat(props.chatRecord)
   })
 })
+
+onBeforeUnmount(() => {
+  disposePathGraph()
+})
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.path-graph-container {
+  height: min(78vh, 720px);
+  width: 100%;
+}
+
+.path-graph-canvas {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.path-graph-title {
+  font-weight: 600;
+  max-width: 70vw;
+}
+
+.path-graph-button {
+  font-weight: 600;
+}
+</style>

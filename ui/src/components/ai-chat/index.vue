@@ -453,6 +453,9 @@ const getWrite = (chat: any, reader: any, stream: boolean) => {
               ChatManagement.appendChunk(chat.id, chunk)
             }
             if (chunk.is_end) {
+              if (Object.prototype.hasOwnProperty.call(chunk, 'path_tool_result')) {
+                chat.path_tool_result = chunk.path_tool_result
+              }
               // 流处理成功 返回成功回调
               return Promise.resolve()
             }
@@ -474,8 +477,12 @@ const getWrite = (chat: any, reader: any, stream: boolean) => {
       if (result_block.code === 500) {
         return Promise.reject(result_block.message)
       } else {
-        if (result_block.content) {
-          ChatManagement.append(chat.id, result_block.content)
+        const data = result_block.data ? result_block.data : result_block
+        if (Object.prototype.hasOwnProperty.call(data, 'path_tool_result')) {
+          chat.path_tool_result = data.path_tool_result
+        }
+        if (data.content) {
+          ChatManagement.append(chat.id, data.content)
         }
       }
       ChatManagement.close(chat.id)

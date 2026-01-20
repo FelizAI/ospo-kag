@@ -39,6 +39,20 @@ interface ApplicationFormType {
   mcp_output_enable?: boolean
 }
 
+export interface PathToolResultData {
+  concept: string[]
+  path: string[]
+}
+
+export interface PathToolResultEnvelope {
+  code: number
+  message: string
+  message_key: string | null
+  data: PathToolResultData
+}
+
+export type PathToolResult = PathToolResultEnvelope | PathToolResultData
+
 interface Chunk {
   real_node_id: string
   chat_id: string
@@ -53,6 +67,7 @@ interface Chunk {
   view_type: string
   runtime_node_id: string
   child_node: any
+  path_tool_result?: PathToolResult | null
 }
 
 interface chatType {
@@ -82,6 +97,7 @@ interface chatType {
   chat_id: string
   vote_status: string
   status?: number
+  path_tool_result?: PathToolResult | null
   execution_details: any[]
   upload_meta?: {
     document_list: Array<any>

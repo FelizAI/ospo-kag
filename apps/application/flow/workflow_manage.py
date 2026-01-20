@@ -6,12 +6,14 @@
     @date：2024/1/9 17:40
     @desc:
 """
+from __future__ import annotations
+
 import concurrent
 import json
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
-from typing import List, Dict
+from typing import List, Dict, TypeAlias
 
 from django.db import close_old_connections, connection
 from django.utils import translation
@@ -28,6 +30,12 @@ from common.handle.impl.response.system_to_response import SystemToResponse
 from common.utils.logger import maxkb_logger
 
 executor = ThreadPoolExecutor(max_workers=200)
+
+JsonPrimitive: TypeAlias = str | int | float | bool | None
+JsonValue: TypeAlias = JsonPrimitive | list["JsonValue"] | dict[str, "JsonValue"]
+
+SPECIAL_TOOL_NODE_ID = '019b737d-ca89-7752-a5c8-33e09a297f21'
+SPECIAL_TOOL_RESULT_KEY = 'path_tool_result'
 
 
 class NodeResultFuture:
@@ -252,12 +260,14 @@ class WorkflowManage:
                 answer_text_list)
             answer_list = reduce(lambda pre, _n: [*pre, *_n], answer_text_list, [])
             self.work_flow_post_handler.handler(self)
+            special_tool_result_params = self.get_special_tool_result_params(details)
 
             res = self.base_to_response.to_block_response(self.params['chat_id'],
                                                           self.params['chat_record_id'], answer_text, True
                                                           , message_tokens, answer_tokens,
                                                           _status=status.HTTP_200_OK if self.status == 200 else status.HTTP_500_INTERNAL_SERVER_ERROR,
-                                                          other_params={'answer_list': answer_list})
+                                                          other_params={'answer_list': answer_list,
+                                                                        **special_tool_result_params})
         finally:
             self._cleanup()
         return res
@@ -342,13 +352,83 @@ class WorkflowManage:
             answer_tokens = sum([row.get('answer_tokens') for row in details.values() if
                                  'answer_tokens' in row and row.get('answer_tokens') is not None])
             self.work_flow_post_handler.handler(self)
+            special_tool_result_params = self.get_special_tool_result_params(details)
             yield self.base_to_response.to_stream_chunk_response(self.params.get('chat_id'),
                                                                  self.params.get('chat_record_id'),
                                                                  '',
                                                                  [],
-                                                                 '', True, message_tokens, answer_tokens, {})
+                                                                 '', True, message_tokens, answer_tokens,
+                                                                 special_tool_result_params)
             if is_cleanup:
                 self._cleanup()
+
+    def get_special_tool_result_params(self, details: dict[str, dict[str, JsonValue]]) -> dict[str, JsonValue]:
+        if not self.is_special_tool_node_in_workflow():
+            return {}
+        result = self.get_special_tool_node_result(details)
+        return {SPECIAL_TOOL_RESULT_KEY: result}
+
+    def get_special_tool_workflow_node_ids(self) -> set[str]:
+        result: set[str] = set()
+        for node in self.flow.nodes:
+            if node.type == 'tool-lib-node':
+                tool_lib_id = (node.properties.get('node_data') or {}).get('tool_lib_id')
+                if tool_lib_id == SPECIAL_TOOL_NODE_ID:
+                    result.add(node.id)
+            if node.type == 'loop-node':
+                loop_body = (node.properties.get('node_data') or {}).get('loop_body')
+                if isinstance(loop_body, dict):
+                    result |= self.get_special_tool_workflow_node_ids_from_obj(loop_body)
+        return result
+
+    def is_special_tool_node_in_workflow(self) -> bool:
+        return len(self.get_special_tool_workflow_node_ids()) > 0
+
+    def get_special_tool_workflow_node_ids_from_obj(self, workflow_obj: dict[str, object]) -> set[str]:
+        result: set[str] = set()
+        nodes = workflow_obj.get('nodes')
+        if isinstance(nodes, list):
+            for node in nodes:
+                if isinstance(node, dict):
+                    node_type = node.get('type')
+                    if node_type == 'tool-lib-node':
+                        node_data = (node.get('properties') or {}).get('node_data') or {}
+                        if isinstance(node_data, dict):
+                            tool_lib_id = node_data.get('tool_lib_id')
+                            if tool_lib_id == SPECIAL_TOOL_NODE_ID:
+                                node_id = node.get('id')
+                                if isinstance(node_id, str):
+                                    result.add(node_id)
+                    if node.get('type') == 'loop-node':
+                        node_data = (node.get('properties') or {}).get('node_data') or {}
+                        if isinstance(node_data, dict):
+                            loop_body = node_data.get('loop_body')
+                            if isinstance(loop_body, dict):
+                                result |= self.get_special_tool_workflow_node_ids_from_obj(loop_body)
+        return result
+
+    def get_special_tool_node_result(self, details: dict[str, dict[str, JsonValue]]) -> JsonValue | None:
+        special_node_ids = self.get_special_tool_workflow_node_ids()
+        for node_details in self.iter_all_runtime_details(details):
+            if node_details.get('node_id') in special_node_ids:
+                return node_details.get('result')
+        return None
+
+    def iter_all_runtime_details(self, details: dict[str, dict[str, JsonValue]]) -> List[dict[str, JsonValue]]:
+        result: List[dict[str, JsonValue]] = []
+        for node_details in details.values():
+            result.append(node_details)
+            if node_details.get('type') != 'loop-node':
+                continue
+            loop_node_data = node_details.get('loop_node_data')
+            if isinstance(loop_node_data, list):
+                for iteration_details in loop_node_data:
+                    if not isinstance(iteration_details, dict):
+                        continue
+                    for inner_node_details in iteration_details.values():
+                        if isinstance(inner_node_details, dict):
+                            result.append(inner_node_details)
+        return result
 
     def run_chain_async(self, current_node, node_result_future, language='zh'):
         future = executor.submit(self.run_chain_manage, current_node, node_result_future, language)
