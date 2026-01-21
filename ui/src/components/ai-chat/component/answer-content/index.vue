@@ -110,7 +110,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import KnowledgeSourceComponent from '@/components/ai-chat/component/knowledge-source-component/index.vue'
 import MdRenderer from '@/components/markdown/MdRenderer.vue'
 import OperationButton from '@/components/ai-chat/component/operation-button/index.vue'
-import { type chatType, type PathToolResultData } from '@/api/type/application'
+import { type chatType, type PathToolResultConcept, type PathToolResultData } from '@/api/type/application'
 import bus from '@/bus'
 import * as echarts from 'echarts'
 
@@ -180,6 +180,7 @@ const answer_text_list = computed(() => {
 
 type ArrowToken = '->' | '<-'
 type ConceptMap = Map<string, string>
+type ConceptItem = PathToolResultConcept
 
 interface GraphNodeData {
   id: string
@@ -237,9 +238,12 @@ const pathToolResultData = computed<PathToolResultData | null>(() => {
   return null
 })
 
-const conceptList = computed<string[]>(() => {
+const conceptList = computed<ConceptItem[]>(() => {
   const list = pathToolResultData.value?.concept
-  return Array.isArray(list) ? list.filter((v) => typeof v === 'string' && v.length > 0) : []
+  if (!Array.isArray(list)) {
+    return []
+  }
+  return list.filter((v) => v.name.trim().length > 0)
 })
 
 const pathList = computed<string[]>(() => {
@@ -263,46 +267,12 @@ const pathGraphExpanded = ref(false)
 const pathGraphRef = ref<HTMLElement>()
 const activeChart = ref<echarts.EChartsType | null>(null)
 
-function parseConceptItem(raw: string): { name: string; description: string } {
-  const text = raw.trim()
-  if (text.length === 0) {
-    return { name: '', description: '' }
-  }
-
-  if (text.includes('://')) {
-    const lastColon = text.lastIndexOf(':')
-    if (lastColon !== -1 && lastColon + 1 < text.length) {
-      const candidateName = text.slice(0, lastColon).trim()
-      const candidateDesc = text.slice(lastColon + 1).trim()
-      const descLooksSafe =
-        candidateDesc.length > 0 &&
-        !candidateDesc.includes('/') &&
-        !candidateDesc.includes('?') &&
-        !candidateDesc.includes('#')
-      if (descLooksSafe) {
-        try {
-          new URL(candidateName)
-          return { name: candidateName, description: candidateDesc }
-        } catch {
-          // ignore
-        }
-      }
-    }
-  }
-
-  const index = text.indexOf(':')
-  if (index === -1) {
-    return { name: text, description: '' }
-  }
-  return { name: text.slice(0, index).trim(), description: text.slice(index + 1).trim() }
-}
-
-function buildConceptMap(concepts: string[]): ConceptMap {
+function buildConceptMap(concepts: ConceptItem[]): ConceptMap {
   const map: ConceptMap = new Map()
   for (const c of concepts) {
-    const { name, description } = parseConceptItem(c)
+    const name = c.name.trim()
     if (name.length > 0 && !map.has(name)) {
-      map.set(name, description)
+      map.set(name, c.description.trim())
     }
   }
   return map
@@ -390,7 +360,7 @@ function colorForNode(isBaseNode: boolean): string {
   return isBaseNode ? 'rgba(51, 112, 255, 0.98)' : 'rgba(148, 163, 184, 0.98)'
 }
 
-function buildGraphData(concepts: string[], paths: string[]): { nodes: GraphNodeData[]; links: GraphLinkData[] } {
+function buildGraphData(concepts: ConceptItem[], paths: string[]): { nodes: GraphNodeData[]; links: GraphLinkData[] } {
   const conceptMap = buildConceptMap(concepts)
   const rawLinks = buildLinksFromPaths(paths)
   const nodeNames = collectNodes(conceptMap, rawLinks)
@@ -472,7 +442,7 @@ const forceLayoutEnabled = ref(true)
 const lockedGraphNodes = ref<GraphNodeData[] | null>(null)
 
 function buildGraphOption(
-  concepts: string[],
+  concepts: ConceptItem[],
   paths: string[],
   isForceLayoutEnabled: boolean,
   fixedNodes?: GraphNodeData[],

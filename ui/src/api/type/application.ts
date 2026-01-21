@@ -40,9 +40,14 @@ interface ApplicationFormType {
 }
 
 export interface PathToolResultData {
-  concept: string[]
+  concept: PathToolResultConcept[]
   path: string[]
   base_node?: string[]
+}
+
+export interface PathToolResultConcept {
+  name: string
+  description: string
 }
 
 export interface PathToolResultEnvelope {

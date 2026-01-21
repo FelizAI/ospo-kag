@@ -6,6 +6,6 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "moduleResolution": "node"
+    "moduleResolution": "Bundler"
   }
 }
