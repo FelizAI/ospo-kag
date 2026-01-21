@@ -45,6 +45,18 @@
             <AppIcon iconName="app-copy"></AppIcon>
           </el-button>
         </el-tooltip>
+        <span v-if="hasPathGraphData">
+          <el-divider direction="vertical" />
+          <el-tooltip
+            effect="dark"
+            :content="pathGraphExpanded ? '收起路径图' : '查看路径图'"
+            placement="top"
+          >
+            <el-button text :type="pathGraphExpanded ? 'primary' : undefined" @click="togglePathGraph">
+              <el-icon><Link /></el-icon>
+            </el-button>
+          </el-tooltip>
+        </span>
         <el-divider direction="vertical" />
         <el-tooltip effect="dark" :content="$t('chat.operation.regeneration')" placement="top">
           <el-button :disabled="chat_loading" text @click="regeneration">
@@ -132,14 +144,18 @@ const props = withDefaults(
     tts: boolean
     tts_type: string
     tts_autoplay: boolean
+    hasPathGraphData?: boolean
+    pathGraphExpanded?: boolean
   }>(),
   {
     data: () => ({}),
     type: 'ai-chat',
+    hasPathGraphData: false,
+    pathGraphExpanded: false,
   },
 )
 
-const emit = defineEmits(['update:data', 'regeneration'])
+const emit = defineEmits(['update:data', 'regeneration', 'togglePathGraph'])
 
 const audioPlayer = ref<HTMLAudioElement[] | null>([])
 const audioCiontainer = ref<HTMLDivElement>()
@@ -150,6 +166,10 @@ const audioList = ref<string[]>([])
 
 function regeneration() {
   emit('regeneration')
+}
+
+function togglePathGraph() {
+  emit('togglePathGraph')
 }
 
 function voteHandle(val: string) {

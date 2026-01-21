@@ -13,28 +13,6 @@
         }"
       >
         <el-card shadow="always" class="mb-8 border-r-8" style="--el-card-padding: 6px 16px">
-          <div v-if="showPathToolResult(index)" class="mb-8 color-secondary">
-            <div class="flex-between align-center gap-8">
-              <div class="flex-1">
-                <div v-if="pathToolResultConceptSummary" class="ellipsis-1">
-                  {{ pathToolResultConceptSummary }}
-                </div>
-                <div v-if="pathToolResultPathSummary" class="ellipsis-2">
-                  {{ pathToolResultPathSummary }}
-                </div>
-              </div>
-              <el-button
-                v-if="hasPathGraphData"
-                class="path-graph-button"
-                size="small"
-                type="primary"
-                link
-                @click.stop="openPathGraph"
-              >
-                查看路径图
-              </el-button>
-            </div>
-          </div>
           <MdRenderer
             v-if="
               (chatRecord.write_ed === undefined || chatRecord.write_ed === true) &&
@@ -92,29 +70,39 @@
         :start-chat="startChat"
         :stop-chat="stopChat"
         :regenerationChart="regenerationChart"
+        :hasPathGraphData="hasPathGraphData"
+        :pathGraphExpanded="pathGraphExpanded"
+        @togglePathGraph="togglePathGraph"
       ></OperationButton>
     </div>
-    <el-dialog
-      v-model="pathGraphVisible"
-      width="86%"
-      top="6vh"
-      append-to-body
-      align-center
-      destroy-on-close
-      :before-close="beforeClosePathGraph"
-    >
-      <template #header>
-        <div class="flex align-center flex-between w-full">
-          <span class="path-graph-title ellipsis-1">路径图</span>
-          <el-button class="path-graph-button" size="small" type="primary" link @click="toggleForceLayout">
-            {{ forceLayoutEnabled ? '固定布局' : '自动布局' }}
-          </el-button>
-        </div>
-      </template>
-      <div class="path-graph-container">
-        <div ref="pathGraphRef" class="path-graph-canvas" v-resize="resizePathGraph"></div>
+    <el-collapse-transition>
+      <div
+        v-show="pathGraphExpanded && hasPathGraphData"
+        class="content"
+        :style="{
+          'padding-left': showAvatar ? 'var(--padding-left)' : '0',
+          'padding-right': showUserAvatar ? 'var(--padding-left)' : '0',
+        }"
+      >
+        <el-card shadow="always" class="mb-8 border-r-8" style="--el-card-padding: 12px 16px">
+          <div class="flex align-center flex-between w-full mb-8">
+            <span class="path-graph-title ellipsis-1">路径图</span>
+            <el-button
+              class="path-graph-button"
+              size="small"
+              type="primary"
+              link
+              @click="toggleForceLayout"
+            >
+              {{ forceLayoutEnabled ? '固定布局' : '自动布局' }}
+            </el-button>
+          </div>
+          <div class="path-graph-inline-container">
+            <div ref="pathGraphRef" class="path-graph-canvas" v-resize="resizePathGraph"></div>
+          </div>
+        </el-card>
       </div>
-    </el-dialog>
+    </el-collapse-transition>
   </div>
 </template>
 <script setup lang="ts">
@@ -259,43 +247,54 @@ const pathList = computed<string[]>(() => {
   return Array.isArray(list) ? list.filter((v) => typeof v === 'string' && v.length > 0) : []
 })
 
+const baseNodeSet = computed<Set<string>>(() => {
+  const list = pathToolResultData.value?.base_node
+  if (!Array.isArray(list)) {
+    return new Set()
+  }
+  return new Set(list.filter((v) => typeof v === 'string' && v.length > 0))
+})
+
 const hasPathGraphData = computed(() => {
   return conceptList.value.length > 0 || pathList.value.length > 0
 })
 
-const pathToolResultConceptSummary = computed(() => {
-  const first = conceptList.value[0]
-  return typeof first === 'string' && first.length > 0 ? first : ''
-})
-
-const pathToolResultPathSummary = computed(() => {
-  const list = pathList.value
-  if (list.length === 0) {
-    return ''
-  }
-  const preview = list.slice(0, 2).join(' / ')
-  return list.length > 2 ? `${preview} / ...` : preview
-})
-
-const showPathToolResult = (index: number) => {
-  return (
-    index === answer_text_list.value.length - 1 &&
-    (pathToolResultConceptSummary.value.length > 0 || pathToolResultPathSummary.value.length > 0)
-  )
-}
-
-const pathGraphVisible = ref(false)
+const pathGraphExpanded = ref(false)
 const pathGraphRef = ref<HTMLElement>()
 const activeChart = ref<echarts.EChartsType | null>(null)
 
 function parseConceptItem(raw: string): { name: string; description: string } {
-  const index = raw.indexOf(':')
-  if (index === -1) {
-    return { name: raw.trim(), description: '' }
+  const text = raw.trim()
+  if (text.length === 0) {
+    return { name: '', description: '' }
   }
-  const name = raw.slice(0, index).trim()
-  const description = raw.slice(index + 1).trim()
-  return { name, description }
+
+  if (text.includes('://')) {
+    const lastColon = text.lastIndexOf(':')
+    if (lastColon !== -1 && lastColon + 1 < text.length) {
+      const candidateName = text.slice(0, lastColon).trim()
+      const candidateDesc = text.slice(lastColon + 1).trim()
+      const descLooksSafe =
+        candidateDesc.length > 0 &&
+        !candidateDesc.includes('/') &&
+        !candidateDesc.includes('?') &&
+        !candidateDesc.includes('#')
+      if (descLooksSafe) {
+        try {
+          new URL(candidateName)
+          return { name: candidateName, description: candidateDesc }
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+
+  const index = text.indexOf(':')
+  if (index === -1) {
+    return { name: text, description: '' }
+  }
+  return { name: text.slice(0, index).trim(), description: text.slice(index + 1).trim() }
 }
 
 function buildConceptMap(concepts: string[]): ConceptMap {
@@ -387,22 +386,8 @@ function collectNodes(conceptMap: ConceptMap, links: Array<{ source: string; tar
   return Array.from(names)
 }
 
-function hashToHue(input: string): number {
-  let hash = 0
-  for (let i = 0; i < input.length; i += 1) {
-    hash = (hash << 5) - hash + input.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash) % 360
-}
-
-function colorForNode(name: string, isolated: boolean): string {
-  if (isolated) {
-    return 'rgba(200, 210, 220, 0.95)'
-  }
-  const hue = hashToHue(name)
-  // 浅色背景下，节点颜色稍微调深一点点以增加对比度，饱和度保持较高
-  return `hsla(${hue}, 75%, 58%, 0.98)`
+function colorForNode(isBaseNode: boolean): string {
+  return isBaseNode ? 'rgba(51, 112, 255, 0.98)' : 'rgba(148, 163, 184, 0.98)'
 }
 
 function buildGraphData(concepts: string[], paths: string[]): { nodes: GraphNodeData[]; links: GraphLinkData[] } {
@@ -422,7 +407,8 @@ function buildGraphData(concepts: string[], paths: string[]): { nodes: GraphNode
   const nodes: GraphNodeData[] = nodeNames.map((name) => {
     const value = degree.get(name) ?? 0
     const isolated = value === 0
-    const color = colorForNode(name, isolated)
+    const isBaseNode = baseNodeSet.value.has(name)
+    const color = colorForNode(isBaseNode)
     const size = Math.min(60, Math.max(24, 24 + value * 4))
     const description = conceptMap.get(name) ?? ''
 
@@ -727,25 +713,29 @@ function toggleForceLayout() {
   )
 }
 
-const openPathGraph = async () => {
-  pathGraphVisible.value = true
+const togglePathGraph = async () => {
+  if (!hasPathGraphData.value) {
+    return
+  }
+  if (pathGraphExpanded.value) {
+    if (!forceLayoutEnabled.value) {
+      const currentNodes = getGraphNodesWithLayout()
+      lockedGraphNodes.value = currentNodes.map((node) => ({ ...node, fixed: true }))
+    }
+    disposePathGraph()
+    pathGraphExpanded.value = false
+    return
+  }
+
+  pathGraphExpanded.value = true
   await nextTick()
   renderPathGraph()
 }
 
-const beforeClosePathGraph = (done: () => void) => {
-  if (!forceLayoutEnabled.value) {
-    const currentNodes = getGraphNodesWithLayout()
-    lockedGraphNodes.value = currentNodes.map((node) => ({ ...node, fixed: true }))
-  }
-  disposePathGraph()
-  done()
-}
-
 watch(
-  () => pathGraphVisible.value,
-  async (visible) => {
-    if (visible) {
+  () => pathToolResultData.value,
+  async () => {
+    if (pathGraphExpanded.value) {
       await nextTick()
       renderPathGraph()
     }
@@ -793,8 +783,8 @@ onBeforeUnmount(() => {
 })
 </script>
 <style lang="scss" scoped>
-.path-graph-container {
-  height: min(78vh, 720px);
+.path-graph-inline-container {
+  height: clamp(420px, 60vh, 760px);
   width: 100%;
 }
 

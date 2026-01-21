@@ -30,12 +30,15 @@
       :tts="application.tts_model_enable"
       :tts_type="application.tts_type"
       :tts_autoplay="application.tts_autoplay"
+      :hasPathGraphData="hasPathGraphData"
+      :pathGraphExpanded="pathGraphExpanded"
       :data="chatRecord"
       :type="type"
       :applicationId="application.id"
       :chatId="chatRecord.chat_id"
       :chat_loading="loading"
       @regeneration="regenerationChart(chatRecord)"
+      @togglePathGraph="emit('togglePathGraph')"
     />
   </div>
 </template>
@@ -51,7 +54,9 @@ defineProps<{
   startChat: (chat_record: any) => void
   stopChat: (chat_record: any) => void
   regenerationChart: (chat_record: any) => void
+  hasPathGraphData?: boolean
+  pathGraphExpanded?: boolean
 }>()
-const emit = defineEmits(['update:chatRecord'])
+const emit = defineEmits(['update:chatRecord', 'togglePathGraph'])
 </script>
 <style lang="scss" scoped></style>
