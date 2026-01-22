@@ -1,5 +1,5 @@
-blank_issues_enabled: false
+blank_issues_enabled: false  # 禁止创建没有模板的空白 Issue，强制规范
 contact_links:
-  - name: Questions & Discussions
-    url: https://github.com/1Panel-dev/MaxKB/discussions
-    about: Raise questions about the installation, deployment, use and other aspects of the project.
+  - name: 💬 社区讨论
+    url: https://github.com/FelizAI/ospo-kag/discussions
+    about: 如果你只是有问题想问，而不是报告 Bug，请点击这里。
