@@ -1,5 +1,5 @@
-blank_issues_enabled: false  # 禁止创建没有模板的空白 Issue，强制规范
+blank_issues_enabled: ture  # 禁止创建没有模板的空白 Issue，强制规范
 contact_links:
-  - name: 💬 社区讨论
+  - name: 💬 社区讨论 (暂未启用)
     url: https://github.com/FelizAI/ospo-kag/discussions
     about: 如果你只是有问题想问，而不是报告 Bug，请点击这里。
