@@ -1,5 +1,5 @@
 name: 📅 Project Task
-description: 记录开发任务、文档编写或比赛相关的待办事项
+description: 记录开发任务、文档编写相关的待办事项
 title: "[Task]: "
 labels: ["task"]
 body:
