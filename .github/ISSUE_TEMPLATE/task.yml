@@ -1,0 +1,26 @@
+name: 📅 Project Task
+description: 记录开发任务、文档编写或比赛相关的待办事项
+title: "[Task]: "
+labels: ["task"]
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: 任务目标
+      description: 这个任务要达成什么效果？
+    validations:
+      required: true
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of Done (DoD)
+      description: 完成的标准是什么？（验收标准）
+      placeholder: |
+        - [ ] 核心代码通过单元测试
+        - [ ] 文档已更新
+        - [ ] PR 已合并
+  - type: input
+    id: assignee
+    attributes:
+      label: 负责人
+      description: 谁负责这个任务？(@username)

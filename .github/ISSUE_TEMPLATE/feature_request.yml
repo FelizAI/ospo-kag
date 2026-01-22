@@ -1,0 +1,28 @@
+name: ✨ Feature Request
+description: 提出新功能建议或改进现有功能
+title: "[Feat]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: 感谢你对项目的建议！
+  - type: textarea
+    id: problem
+    attributes:
+      label: 痛点描述
+      description: 这个功能是为了解决什么问题？
+      placeholder: 我现在的困扰是每次都需要手动配置...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 建议方案
+      description: 你期望该功能如何工作？
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 你是否考虑过其他替代方案？
