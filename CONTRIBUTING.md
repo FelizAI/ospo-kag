@@ -8,7 +8,7 @@
 
 我们遵循标准的 GitHub 开源协作流程：
 
-1. **提 Issue**：任何代码变动前，请先[创建一个 Issue](https://www.google.com/search?q=https://github.com/FelizAI/ospo-kag/issues)。
+1. **提 Issue**：任何代码变动前，请先[创建一个 Issue](https://github.com/FelizAI/ospo-kag/issues)。
 * 如果是 Bug，请使用 `Bug Report` 模板。
 * 如果是新功能，请使用 `Feature Request` 模板。
 * 如果是团队任务，请使用 `Project Task` 模板。
